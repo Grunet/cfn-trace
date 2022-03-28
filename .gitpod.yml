@@ -2,10 +2,6 @@
 image:
   file: .gitpod.Dockerfile
 
-# tasks:
-#   - command: |
-#       deno run --allow-net --unstable webserver.ts
-
 vscode:
   extensions:
     - "denoland.vscode-deno"
