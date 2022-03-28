@@ -1,2 +1,2 @@
-run: 
-	deno run src/index.ts
+version: 
+	deno run src/index.ts --version
