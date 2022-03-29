@@ -1,3 +1,4 @@
+ci: all
 all: format lint test clean build version
 format:
 	deno fmt
