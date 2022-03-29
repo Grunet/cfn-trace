@@ -1,2 +1,3 @@
 # cfn-trace
-Captures nested Cloudformation stack deploy events as traces 
+
+Captures nested Cloudformation stack deploy events as traces
