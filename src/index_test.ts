@@ -25,12 +25,17 @@ Deno.test("Passing --version logs the version to the console", () => {
     };
   })();
 
+  const mockVersionData = {
+    version: "theVersion",
+  };
+
   //ACT
   invoke({
     cliArgs: parsedCliArgs,
     logger: mockLogger,
+    versionData: mockVersionData,
   });
 
   //ASSERT
-  assertEquals(mockLogger.getInterceptedLogs()["info"][0], "Version is 0.0.0");
+  assertEquals(mockLogger.getInterceptedLogs()["info"][0], "theVersion");
 });
