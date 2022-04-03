@@ -13,10 +13,5 @@ for (const architecture of targetArchitectures) {
 
     console.log(pathToZip);
 
-    const { stdout:stdoutOfFilenameExtraction } = await $`basename ${pathToZip}`;
-    const filenameOfZip = stdoutOfFilenameExtraction.trim();
-
-    console.log(filenameOfZip);
-
-    await $`COSIGN_EXPERIMENTAL=1 cosign sign-blob --output-certificate ${filenameOfZip}.pem --output-signature ${filenameOfZip}.sig ${pathToZip}`;
+    await $`COSIGN_EXPERIMENTAL=1 cosign sign-blob --output-certificate ${pathToZip}.pem --output-signature ${pathToZip}.sig ${pathToZip}`;
 }
