@@ -5,16 +5,16 @@ on:
 
 jobs:
   ci:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Setup Deno
         uses: denoland/setup-deno@v1
         with:
           # Version is duplicated in the .gitpod.Dockerfile
           deno-version: v1.20.3
-
-      - name: Checkout repository
-        uses: actions/checkout@v3
 
       - name: Run CI
         run: |
