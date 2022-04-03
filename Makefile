@@ -12,6 +12,7 @@ build:
 	deno compile --output ./dist/cfn-trace ./src/index.ts
 version: 
 	./dist/cfn-trace --version
+#Release-related commands
 buildAllArchitectures:
 	zx ./scripts/buildBinariesForAllArchitectures.mjs
 zipBinaries: 
