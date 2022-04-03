@@ -13,7 +13,7 @@ build:
 version: 
 	./dist/cfn-trace --version
 #Release-related commands
-buildAllArchitectures:
+buildBinariesForAllArchitectures:
 	zx ./scripts/buildBinariesForAllArchitectures.mjs
 zipBinaries: 
 	zx ./scripts/zipBinaries.mjs
