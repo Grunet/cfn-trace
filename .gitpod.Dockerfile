@@ -14,5 +14,5 @@ RUN npm i -g zx@6.0.7
 #install cosign
 # version below is duplicated in Github Workflow files
 RUN wget "https://github.com/sigstore/cosign/releases/download/v1.6.0/cosign-linux-amd64"
-RUN mkdir -p /home/gitpod/.cosign/bin/ && mv cosign-linux-amd64 /home/gitpod/.cosign/bin/cosign && echo 'export PATH="/home/gitpod/.cosign/bin:$PATH"'
+RUN mkdir -p /home/gitpod/.cosign/bin/ && mv cosign-linux-amd64 /home/gitpod/.cosign/bin/cosign && export PATH="/home/gitpod/.cosign/bin:$PATH"
 RUN chmod +x /home/gitpod/.cosign/bin/cosign
