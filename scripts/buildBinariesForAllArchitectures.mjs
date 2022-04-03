@@ -1,5 +1,7 @@
 #!/usr/bin/env zx
 
+import {  } from "./shared/targetArchitectures.mjs";
+
 const targetArchitectures = [
     "x86_64-unknown-linux-gnu", 
     "x86_64-pc-windows-msvc", 
