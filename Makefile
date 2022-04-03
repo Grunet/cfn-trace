@@ -18,4 +18,5 @@ buildAllArchitectures:
 zipBinaries: 
 	zx ./scripts/zipBinaries.mjs
 signArtifacts:
+	zx ./scripts/signArtifacts.mjs
 createRelease:
