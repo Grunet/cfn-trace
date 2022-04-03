@@ -1,0 +1,75 @@
+name: Release
+on: 
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'version.json'
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-20.04
+    permissions:
+      #Needed for release-it
+      contents: write
+      #Needed for the artifact signing process
+      id-token: write
+    steps:
+      - name: Check branch
+        #Primarily to avoid accidentally manually running this workflow from a different branch
+        if: github.ref != 'refs/heads/main'
+        run: |
+          exit 1
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          # Version is duplicated in the .gitpod.Dockerfile
+          deno-version: v1.20.3
+
+      - name: Setup Node (for zx)
+        uses: actions/setup-node@v3
+        with:
+          #Highest LTS at time of writing
+          node-version: '16.14.2'
+
+      - name: Install zx
+        # Version is duplicated in the .gitpod.Dockerfile
+        run: |
+          npm i -g zx@6.0.7
+
+      - name: Build binaries for all architectures
+        run: |
+          make buildBinariesForAllArchitectures
+
+      - name: Zip binaries
+        run: |
+          make zipBinaries
+
+      - name: Install cosign
+        # Version of cosign (per cosign-release setting) is duplicated in the .gitpod.Dockerfile
+        uses: sigstore/cosign-installer@2.1.0
+        with:
+          cosign-release: 'v1.6.0'
+
+      - name: Sign artifacts
+        run: |
+          make signArtifacts
+
+      - name: Configure Git user to be able to commit a release message
+        #Copied from https://github.com/ad-m/github-push-action
+        #Pointed to from https://github.community/t/github-actions-bot-email-address/17204/6
+        #GA issue https://github.com/actions/checkout/issues/13
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Create release
+        run: |
+          make createRelease
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
