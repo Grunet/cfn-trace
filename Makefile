@@ -20,3 +20,4 @@ zipBinaries:
 signArtifacts:
 	zx ./scripts/signArtifacts.mjs
 createRelease:
+	zx ./scripts/createRelease.mjs
