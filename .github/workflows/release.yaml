@@ -52,7 +52,7 @@ jobs:
 
       - name: Install cosign
         # Version of cosign (per cosign-release setting) is duplicated in the .gitpod.Dockerfile
-        uses: sigstore/cosign-installer@2.1.0
+        uses: sigstore/cosign-installer@v2.1.0
         with:
           cosign-release: 'v1.6.0'
 
