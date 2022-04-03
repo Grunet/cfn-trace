@@ -1,11 +1,8 @@
 #!/usr/bin/env zx
 
-const targetArchitectures = [
-    "x86_64-unknown-linux-gnu", 
-    "x86_64-pc-windows-msvc", 
-    "x86_64-apple-darwin", 
-    "aarch64-apple-darwin"
-];
+import { getTargetArchitectures } from "./shared/targetArchitectures.mjs";
+
+const targetArchitectures = getTargetArchitectures();
 
 for (const architecture of targetArchitectures) {
     const { stdout:stdoutOfPathLookup } = await $`find -type f -name '*${architecture}*.zip'`;
