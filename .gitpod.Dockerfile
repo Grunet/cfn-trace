@@ -17,3 +17,9 @@ RUN wget "https://github.com/sigstore/cosign/releases/download/v1.6.0/cosign-lin
 RUN mkdir -p /home/gitpod/.cosign/bin/ && mv cosign-linux-amd64 /home/gitpod/.cosign/bin/cosign
 ENV PATH=$PATH:/home/gitpod/.cosign/bin
 RUN chmod +x /home/gitpod/.cosign/bin/cosign
+
+#install aws cli
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+RUN unzip awscliv2.zip
+RUN mkdir -p /home/gitpod/.aws-cli/bin/ && ./aws/install --install-dir /home/gitpod/.aws-cli/bin/
+ENV PATH=$PATH:/home/gitpod/.aws-cli/bin/
