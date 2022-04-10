@@ -19,7 +19,8 @@ ENV PATH=$PATH:/home/gitpod/.cosign/bin
 RUN chmod +x /home/gitpod/.cosign/bin/cosign
 
 #install aws cli
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.5.4.zip" -o "awscliv2.zip"
 RUN unzip awscliv2.zip
-RUN mkdir -p /home/gitpod/.aws-cli/bin/ && ./aws/install --install-dir /home/gitpod/.aws-cli/bin/
+RUN mkdir -p /home/gitpod/.aws-cli/files /home/gitpod/.aws-cli/bin/ && ./aws/install --install-dir /home/gitpod/.aws-cli/files --bin-dir /home/gitpod/.aws-cli/bin/
 ENV PATH=$PATH:/home/gitpod/.aws-cli/bin/
+RUN rm awscliv2.zip
