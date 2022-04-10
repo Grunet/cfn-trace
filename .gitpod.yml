@@ -7,8 +7,8 @@ tasks:
     # Choose not to try this during the "before" or "init" steps because the (publicly available) prebuild also runs these steps
     # More discussion on this here - https://www.gitpod.io/docs/prebuilds#user-specific-environment-variables-in-prebuilds
     command: |
-      AWS_ACCESS_KEY_ID=$CFN_TRACE_AWS_ACCESS_KEY_ID
-      AWS_SECRET_ACCESS_KEY=$CFN_TRACE_AWS_SECRET_ACCESS_KEY
+      export AWS_ACCESS_KEY_ID=$CFN_TRACE_AWS_ACCESS_KEY_ID
+      export AWS_SECRET_ACCESS_KEY=$CFN_TRACE_AWS_SECRET_ACCESS_KEY
 
 vscode:
   extensions:
