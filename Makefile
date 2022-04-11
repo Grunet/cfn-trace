@@ -24,4 +24,3 @@ createRelease:
 #Cloudformation-related commands
 lintTemplates:
 	cfn-lint ./examples/**/*
-	cfn_nag_scan --input-path ./examples
