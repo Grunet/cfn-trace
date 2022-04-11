@@ -21,3 +21,6 @@ signArtifacts:
 	zx ./scripts/signArtifacts.mjs
 createRelease:
 	zx ./scripts/createRelease.mjs
+#Cloudformation-related commands
+lintTemplates:
+	cfn-lint ./examples/**/*

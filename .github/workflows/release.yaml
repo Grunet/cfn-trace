@@ -1,10 +1,10 @@
 name: Release
-on: 
+on:
   push:
     branches:
-      - 'main'
+      - "main"
     paths:
-      - 'version.json'
+      - "version.json"
   workflow_dispatch:
 
 jobs:
@@ -35,7 +35,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           #Highest LTS at time of writing
-          node-version: '16.14.2'
+          node-version: "16.14.2"
 
       - name: Install zx
         # Version is duplicated in the .gitpod.Dockerfile
@@ -54,7 +54,7 @@ jobs:
         # Version of cosign (per cosign-release setting) is duplicated in the .gitpod.Dockerfile
         uses: sigstore/cosign-installer@v2.1.0
         with:
-          cosign-release: 'v1.6.0'
+          cosign-release: "v1.6.0"
 
       - name: Sign artifacts
         run: |
