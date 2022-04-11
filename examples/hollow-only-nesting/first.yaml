@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  The 1st level stack
+Resources:
+  SecondLevelStackResource:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "./second.yaml"
