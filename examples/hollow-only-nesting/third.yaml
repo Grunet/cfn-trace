@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  The 3rd level stack
+Resources:
+  EcsClusterResource:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: "theEcsClusterName"
