@@ -29,6 +29,6 @@ RUN rm awscliv2.zip
 RUN pip install cfn-lint 
 #gem doesn't appear to be available at this point (though it seems like gitpod/workspace-full should make it so), hence this workaround
 # RUN gem install cfn-nag
-RUN mkdir /home/gitpod/.cfn-nag/bin/
+RUN mkdir -p /home/gitpod/.cfn-nag/bin/
 COPY --from=stelligent/cfn_nag:0.8.9 /usr/local/bundle/bin/cfn_nag /home/gitpod/.cfn-nag/bin/
 ENV PATH=$PATH:/home/gitpod/.cfn-nag/bin/
