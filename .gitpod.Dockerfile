@@ -24,3 +24,7 @@ RUN unzip awscliv2.zip
 RUN mkdir -p /home/gitpod/.aws-cli/files /home/gitpod/.aws-cli/bin/ && ./aws/install --install-dir /home/gitpod/.aws-cli/files --bin-dir /home/gitpod/.aws-cli/bin/
 ENV PATH=$PATH:/home/gitpod/.aws-cli/bin/
 RUN rm awscliv2.zip
+
+#install Cloudformation template tools
+RUN pip install cfn-lint 
+RUN gem install cfn-nag

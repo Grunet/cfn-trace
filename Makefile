@@ -21,3 +21,7 @@ signArtifacts:
 	zx ./scripts/signArtifacts.mjs
 createRelease:
 	zx ./scripts/createRelease.mjs
+#Cloudformation-related commands
+lintTemplates:
+	cfn-lint ./examples/**/*
+	cfn_nag_scan --input-path ./examples
