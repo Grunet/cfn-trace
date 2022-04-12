@@ -17,6 +17,7 @@ vscode:
     - "denoland.vscode-deno"
     #The yellow squiggle here appears to be a false positive, since the extension is installed globally
     - "redhat.vscode-yaml"
+    - dsteenman.cloudformation-yaml-snippets
 
 github:
   prebuilds:
