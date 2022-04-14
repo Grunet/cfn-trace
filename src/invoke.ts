@@ -18,8 +18,8 @@ interface IVersionData {
 }
 
 interface ILogger {
-    info: (message: string) => void;
-  }
+  info: (message: string) => void;
+}
 
 function invoke(
   { cliArgs, logger, versionData }: IInputs,
