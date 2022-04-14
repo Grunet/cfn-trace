@@ -25,15 +25,17 @@ interface IAdaptedStackEvent {
 }
 
 class CloudformationClientAdapter implements ICloudformationClientAdapter {
-    constructor({accessKeyId, secretAccessKey, region}: ICreateCloudformationClientAdapterInputs) {
-
-    }
-
+  constructor(
+    { accessKeyId, secretAccessKey, region }:
+      ICreateCloudformationClientAdapterInputs,
+  ) {
+  }
 
   getEventsFromMostRecentDeploy(
     inputs: IGetEventsFromMostRecentDeployInputs,
   ): IGetEventsFromMostRecentDeployOutputs {
     //TODO - fill out the implementation
+    return { stackEvents: [] };
   }
 }
 
