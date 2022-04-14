@@ -2,14 +2,16 @@ ci: format lint test clean build version
 format:
 	deno fmt
 lint:
-	deno lint 
+	deno lint
 test:
-	deno test
+#--no-check works around the aws-sdk fork having type errors by skipping all type checking altogether. See https://github.com/denoland/deno/issues/5460 and linked issues
+	deno test --no-check
 clean:
 	rm -rf dist
 	rm -rf release_artifacts
 build:
-	deno compile --output ./dist/cfn-trace ./src/index.ts
+#--no-check works around the aws-sdk fork having type errors by skipping all type checking altogether. See https://github.com/denoland/deno/issues/5460 and linked issues
+	deno compile --no-check --output ./dist/cfn-trace ./src/index.ts
 version: 
 	./dist/cfn-trace --version
 #Release-related commands
