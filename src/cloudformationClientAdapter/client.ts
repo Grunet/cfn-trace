@@ -1,6 +1,6 @@
 import {
   CloudFormationClient,
-} from "https://cdn.deno.land/aws_sdk/versions/v3.32.0-1/raw/client-cloudformation/mod.ts"; // @ts-ignore sdfsdf
+} from "https://cdn.deno.land/aws_sdk/versions/v3.32.0-1/raw/client-cloudformation/mod.ts";
 
 interface ICloudformationClientAdapter {
   getEventsFromMostRecentDeploy(
