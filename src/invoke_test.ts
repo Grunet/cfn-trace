@@ -1,4 +1,4 @@
-import { invoke } from "./index.ts";
+import { invoke } from "./invoke.ts";
 
 import { assertEquals } from "https://deno.land/std@0.132.0/testing/asserts.ts";
 
@@ -32,8 +32,13 @@ Deno.test("Passing --version logs the version to the console", () => {
   //ACT
   invoke({
     cliArgs: parsedCliArgs,
-    logger: mockLogger,
     versionData: mockVersionData,
+    cloudformationClientAdapter: {
+      getEventsFromMostRecentDeploy() {
+        return { stackEvents: [] };
+      },
+    },
+    logger: mockLogger,
   });
 
   //ASSERT
