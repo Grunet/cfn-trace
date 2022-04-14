@@ -15,7 +15,17 @@ interface IGetEventsFromMostRecentDeployOutputs {
 interface IStackEventData {
 }
 
-function createCloudformationClientAdapter(): ICloudformationClientAdapter {
+//TODO - implement ICloudformationClientAdapter
+
+interface ICreateCloudformationClientAdapterInputs {
+  accessKeyId: string;
+  secretAccessKey: string;
+  region: string;
+}
+
+function createCloudformationClientAdapter(
+  inputs: ICreateCloudformationClientAdapterInputs,
+): ICloudformationClientAdapter {
   //TODO - implement this
 }
 
