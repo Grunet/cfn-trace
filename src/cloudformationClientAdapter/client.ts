@@ -24,7 +24,18 @@ interface IAdaptedStackEvent {
   timestamp: Date;
 }
 
-//TODO - implement ICloudformationClientAdapter
+class CloudformationClientAdapter implements ICloudformationClientAdapter {
+    constructor({accessKeyId, secretAccessKey, region}: ICreateCloudformationClientAdapterInputs) {
+
+    }
+
+
+  getEventsFromMostRecentDeploy(
+    inputs: IGetEventsFromMostRecentDeployInputs,
+  ): IGetEventsFromMostRecentDeployOutputs {
+    //TODO - fill out the implementation
+  }
+}
 
 interface ICreateCloudformationClientAdapterInputs {
   accessKeyId: string;
@@ -35,7 +46,7 @@ interface ICreateCloudformationClientAdapterInputs {
 function createCloudformationClientAdapter(
   inputs: ICreateCloudformationClientAdapterInputs,
 ): ICloudformationClientAdapter {
-  //TODO - implement this
+  return new CloudformationClientAdapter(inputs);
 }
 
 export { createCloudformationClientAdapter };
