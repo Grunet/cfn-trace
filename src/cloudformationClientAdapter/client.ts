@@ -1,3 +1,7 @@
+import {
+  CloudFormationClient,
+} from "https://cdn.deno.land/aws_sdk/versions/v3.32.0-1/raw/client-cloudformation/mod.ts"; // @ts-ignore sdfsdf
+
 interface ICloudformationClientAdapter {
   getEventsFromMostRecentDeploy(
     inputs: IGetEventsFromMostRecentDeployInputs,
@@ -29,7 +33,16 @@ class CloudformationClientAdapter implements ICloudformationClientAdapter {
     { accessKeyId, secretAccessKey, region }:
       ICreateCloudformationClientAdapterInputs,
   ) {
+    this.cloudformationClient = new CloudFormationClient({
+      credentials: {
+        accessKeyId: accessKeyId,
+        secretAccessKey: secretAccessKey,
+      },
+      region: region,
+    });
   }
+
+  private cloudformationClient: CloudFormationClient;
 
   getEventsFromMostRecentDeploy(
     inputs: IGetEventsFromMostRecentDeployInputs,
