@@ -9,10 +9,19 @@ interface IGetEventsFromMostRecentDeployInputs {
 }
 
 interface IGetEventsFromMostRecentDeployOutputs {
-  stackEvents: IStackEventData[];
+  stackEvents: IAdaptedStackEvent[];
 }
 
-interface IStackEventData {
+interface IAdaptedStackEvent {
+  resourceArn: string;
+  resourceName: string;
+  resourceProperties: string | undefined;
+  resourceStatus: string; //TODO - see if this can be made into an exhaustive enum
+  resourceStatusReason: string | undefined;
+  resourceType: string;
+  stackArn: string;
+  stackName: string;
+  timestamp: Date;
 }
 
 //TODO - implement ICloudformationClientAdapter
