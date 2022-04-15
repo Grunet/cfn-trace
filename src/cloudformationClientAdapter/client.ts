@@ -86,31 +86,31 @@ class CloudformationClientAdapter implements ICloudformationClientAdapter {
 
 function adaptSingleStackEvent(stackEvent: StackEvent): IAdaptedStackEvent {
   //TODO - consolidate these if appropriate (I couldn't get TS to understand the properties had been guarded after consolidating into a generic forEach)
-  if (!stackEvent.LogicalResourceId) {
+  if (stackEvent.LogicalResourceId === undefined) {
     throwForMissingStackEventProperty("LogicalResourceId", stackEvent);
   }
 
-  if (!stackEvent.PhysicalResourceId) {
+  if (stackEvent.PhysicalResourceId === undefined) {
     throwForMissingStackEventProperty("PhysicalResourceId", stackEvent);
   }
 
-  if (!stackEvent.ResourceStatus) {
+  if (stackEvent.ResourceStatus === undefined) {
     throwForMissingStackEventProperty("ResourceStatus", stackEvent);
   }
 
-  if (!stackEvent.ResourceType) {
+  if (stackEvent.ResourceType === undefined) {
     throwForMissingStackEventProperty("ResourceType", stackEvent);
   }
 
-  if (!stackEvent.StackId) {
+  if (stackEvent.StackId === undefined) {
     throwForMissingStackEventProperty("StackId", stackEvent);
   }
 
-  if (!stackEvent.StackName) {
+  if (stackEvent.StackName === undefined) {
     throwForMissingStackEventProperty("StackName", stackEvent);
   }
 
-  if (!stackEvent.Timestamp) {
+  if (stackEvent.Timestamp === undefined) {
     throwForMissingStackEventProperty("Timestamp", stackEvent);
   }
 
