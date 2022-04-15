@@ -14,8 +14,9 @@ build:
 #--unstable is here because the aws-sdk fork depends on the Node shim for the "os" library, which uses the Deno.osRelease function, which isn't part of the stable Deno 1.20.3 release 
 #--allow-read of cwd is here because the aws-sdk fork depends on Deno's Node shims (at module import evaluation time), in particular the one for the process API, which includes a call to get the cwd - https://deno.land/std@0.79.0/node/process.ts
 #--allow-env of all env variables is here because the aws-sdk fork depends on Deno's Node shims (at module import evaluation time), in particular the one for the process API, whose 0.79.0 version (but maybe not more recent ones) has a bug that causes it call Deno.env.toObject() before any env variables have been requested - https://deno.land/std@0.79.0/node/process.ts
+#--allow-net is set to all here because Deno doesn't currently allow for wildcards in the hostname (if it did, cloudformation.*.amazonaws.com would suffice, since * would match any region). Issue for this on the Deno repository - https://github.com/denoland/deno/issues/6532
 #--no-prompt is here because the aws-sdk (fork) will try to read from ~/.aws/config and ~/.aws/credentials, and then block while waiting for the user to grant permissions. This instead automatically denies access to them
-	deno compile --no-check --unstable --allow-read=./ --allow-env --no-prompt --output ./dist/cfn-trace ./src/index.ts
+	deno compile --no-check --unstable --allow-read=./ --allow-env --allow-net --no-prompt --output ./dist/cfn-trace ./src/index.ts
 version: 
 	./dist/cfn-trace --version
 #Release-related commands
