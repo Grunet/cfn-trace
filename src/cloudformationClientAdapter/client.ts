@@ -9,7 +9,7 @@ import {
 interface ICloudformationClientAdapter {
   getEventsFromMostRecentDeploy(
     inputs: IGetEventsFromMostRecentDeployInputs,
-  ): IGetEventsFromMostRecentDeployOutputs;
+  ): Promise<IGetEventsFromMostRecentDeployOutputs>;
 }
 
 interface IGetEventsFromMostRecentDeployInputs {
