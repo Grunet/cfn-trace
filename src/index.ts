@@ -8,7 +8,7 @@ import {
 
 const cliArgs = parse(Deno.args);
 
-invoke({
+await invoke({
   cliArgs: cliArgs as IExpectedCliArgs,
   versionData: versionDataFromFile as IVersionData,
   cloudformationClientAdapter: createCloudformationClientAdapter({

@@ -11,6 +11,7 @@ interface IInputs {
 
 interface IExpectedCliArgs {
   version?: boolean;
+  "stack-name"?: string;
 }
 
 interface IVersionData {
@@ -21,11 +22,19 @@ interface ILogger {
   info: (message: string) => void;
 }
 
-function invoke(
-  { cliArgs, logger, versionData }: IInputs,
+async function invoke(
+  { cliArgs, logger, versionData, cloudformationClientAdapter }: IInputs,
 ) {
   if (cliArgs["version"] === true) {
     logger.info(versionData.version);
+  }
+
+  if (cliArgs["stack-name"]) {
+    const { stackEvents } = await cloudformationClientAdapter
+      .getEventsFromMostRecentDeploy({
+        stackName: cliArgs["stack-name"],
+      });
+    console.log(stackEvents);
   }
 }
 
