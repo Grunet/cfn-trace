@@ -72,22 +72,15 @@ class CloudformationClientAdapter implements ICloudformationClientAdapter {
       adaptSingleStackEvent,
     );
 
-    const indexOfStartOfMostRecentDeploy = adaptedStackEvents.findIndex(({resourceIdPerCloudformation, resourceStatus}) => {
-      return 
-    })
+    const adaptedStackEventsFromMostRecentDeploy: IAdaptedStackEvent[] =
+      trimAdaptedStackEventsToTheMostRecentDeploy(
+        stackName,
+        adaptedStackEvents,
+      );
 
-    // const indexOfStartOfMostRecentDeploy = StackEvents.findIndex((
-    //   { ResourceStatus, LogicalResourceId },
-    // ) =>
-    //   eventStatusAtStartOfDeploy.has(ResourceStatus) &&
-    //   LogicalResourceId === stackName
-    // );
-    // const eventsFromMostRecentDeploy = StackEvents.slice(
-    //   0,
-    //   indexOfStartOfMostRecentDeploy + 1,
-    // ); //The "end" here may not be correct in all situations. Need to think on it a little more
-
-    return await Promise.resolve({ stackEvents: [] });
+    return {
+      stackEvents: adaptedStackEventsFromMostRecentDeploy,
+    };
   }
 }
 
@@ -143,6 +136,28 @@ function throwForMissingStackEventProperty(
   throw new Error(
     `${propertyName} is missing on stack event : ${JSON.stringify(stackEvent)}`,
   );
+}
+
+const possibleEventStatusesAtStartOfDeploy = new Set([
+  "REVIEW_IN_PROGRESS",
+  "UPDATE_IN_PROGRESS",
+]); //Should CREATE_IN_PROGRESS be included here too somehow? Or will REVIEW_IN_PROGRESS always come right before it?
+
+function trimAdaptedStackEventsToTheMostRecentDeploy(
+  stackName: string,
+  adaptedStackEvents: IAdaptedStackEvent[],
+): IAdaptedStackEvent[] {
+  const indexOfStartOfMostRecentDeploy = adaptedStackEvents.findIndex(
+    ({ resourceIdPerCloudformation, resourceStatus }) => {
+      return (resourceIdPerCloudformation === stackName) &&
+        possibleEventStatusesAtStartOfDeploy.has(resourceStatus);
+    },
+  );
+
+  const adaptedStackEventsFromMostRecentDeploy: IAdaptedStackEvent[] =
+    adaptedStackEvents.slice(0, indexOfStartOfMostRecentDeploy + 1); //Is there an off-by-one error here sometimes? Not sure
+
+  return adaptedStackEventsFromMostRecentDeploy;
 }
 
 interface ICreateCloudformationClientAdapterInputs {
