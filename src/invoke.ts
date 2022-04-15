@@ -34,7 +34,7 @@ async function invoke(
       .getEventsFromMostRecentDeploy({
         stackName: cliArgs["stack-name"],
       });
-    console.log(stackEvents);
+    console.log(stackEvents); //TODO - remove this later
   }
 }
 
