@@ -6,5 +6,5 @@ const targetArchitectures = getTargetArchitectures();
 
 for (const architecture of targetArchitectures) {
   await $
-    `deno compile --target ${architecture} --output ./release_artifacts/${architecture}/cfn-trace ./src/index.ts`;
+    `make buildBinaryForASingleArchitecture architecture=${architecture} outputPath=./release_artifacts/${architecture}/cfn-trace`
 }
