@@ -19,3 +19,7 @@ jobs:
       - name: Run CI
         run: |
           make ci
+        env:
+          #CI as of right now doesn't exercise the aws sdk
+          #So setting these so the aws sdk doesn't throw
+          AWS_DEFAULT_REGION: "unused"
