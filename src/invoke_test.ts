@@ -1,8 +1,8 @@
-import { invoke } from "./index.ts";
+import { invoke } from "./invoke.ts";
 
 import { assertEquals } from "https://deno.land/std@0.132.0/testing/asserts.ts";
 
-Deno.test("Passing --version logs the version to the console", () => {
+Deno.test("Passing --version logs the version to the console", async () => {
   //ARRANGE
   const parsedCliArgs = {
     version: true,
@@ -30,10 +30,15 @@ Deno.test("Passing --version logs the version to the console", () => {
   };
 
   //ACT
-  invoke({
+  await invoke({
     cliArgs: parsedCliArgs,
-    logger: mockLogger,
     versionData: mockVersionData,
+    cloudformationClientAdapter: {
+      getEventsFromMostRecentDeploy() {
+        return Promise.resolve({ stackEvents: [] });
+      },
+    },
+    logger: mockLogger,
   });
 
   //ASSERT
