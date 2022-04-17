@@ -6,5 +6,5 @@ const targetArchitectures = getTargetArchitectures();
 
 for (const architecture of targetArchitectures) {
   await $
-    `make buildBinaryForASingleArchitecture architecture=${architecture} outputPath=./release_artifacts/${architecture}/cfn-trace`
+    `make buildBinaryForASingleArchitecture architecture=${architecture} outputPath=./release_artifacts/${architecture}/cfn-trace`;
 }
