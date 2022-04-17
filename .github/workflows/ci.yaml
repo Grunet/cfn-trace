@@ -20,6 +20,6 @@ jobs:
         run: |
           make ci
         env:
-          #CI as of right now doesn't exercise the aws sdk
-          #So setting these so the aws sdk doesn't throw
+          #CI as of right now doesn't exercise the aws sdk fork
+          #So setting this so it doesn't throw an error here - https://github.com/christophgysin/aws-sdk-js-v3/blob/deno/deno/config-resolver/regionConfig/resolveRegionConfig.ts#L23
           AWS_DEFAULT_REGION: "unused"
