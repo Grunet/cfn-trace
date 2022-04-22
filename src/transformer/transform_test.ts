@@ -7,7 +7,7 @@ import {
 
 import { assertEquals } from "https://deno.land/std@0.132.0/testing/asserts.ts";
 
-Deno.test("Correctly transforms a typical nested stack's events", () => {
+Deno.test("Correctly transforms a typical nested stack's events", async () => {
   //ARRANGE
   const inputs: IInputs = {
     stackName: "rootStackName",
@@ -43,7 +43,7 @@ Deno.test("Correctly transforms a typical nested stack's events", () => {
   };
 
   //ACT
-  const outputs = transformStackEventDataIntoTracingData(inputs);
+  const outputs = await transformStackEventDataIntoTracingData(inputs);
 
   //ASSERT
   const spanDataById = new Map<string, ISpanData>();

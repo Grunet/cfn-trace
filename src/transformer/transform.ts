@@ -20,12 +20,24 @@ interface ISpanData {
   endInstant: Date;
 }
 
-function transformStackEventDataIntoTracingData(inputs: IInputs): ITracingData {
+async function transformStackEventDataIntoTracingData(
+  inputs: IInputs,
+): Promise<ITracingData> {
   const { stackName, dependencies: { cloudformationClientAdapter } } = inputs;
 
   const tracingData = new Map<string, ISpanData>();
 
-  //TODO - fill in the details
+  const { stackEvents } = await cloudformationClientAdapter
+    .getEventsFromMostRecentDeploy({
+      stackName,
+    });
+
+  tracingData.set(stackEvents[0].resourceIdPerCloudformation, {
+    childSpanIds: new Set<string>(),
+    name: stackEvents[0].resourceIdPerCloudformation,
+    startInstant: stackEvents[1].timestamp,
+    endInstant: stackEvents[0].timestamp,
+  });
 
   return {
     spanDataById: tracingData,
