@@ -33,3 +33,4 @@ function transformStackEventDataIntoTracingData(inputs: IInputs): ITracingData {
 }
 
 export { transformStackEventDataIntoTracingData };
+export type { IInputs, ISpanData, ITracingData };
