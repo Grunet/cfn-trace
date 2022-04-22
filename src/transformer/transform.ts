@@ -32,12 +32,46 @@ async function transformStackEventDataIntoTracingData(
       stackName,
     });
 
-  tracingData.set(stackEvents[0].resourceIdPerCloudformation, {
-    childSpanIds: new Set<string>(),
-    name: stackEvents[0].resourceIdPerCloudformation,
-    startInstant: stackEvents[1].timestamp,
-    endInstant: stackEvents[0].timestamp,
-  });
+  for (
+    const { resourceIdPerCloudformation, resourceStatus, timestamp }
+      of stackEvents
+  ) {
+    if (resourceStatus === "UPDATE_COMPLETE") {
+      //TODO - incorporate the startInstant & endInstant so this satisfies TS (and/or adjust the typings all around this)
+      const currentTransformedState: ISpanData =
+        tracingData.get(resourceIdPerCloudformation) ?? {
+          childSpanIds: new Set<string>(),
+          name: resourceIdPerCloudformation,
+        };
+
+      const newTransformedState = {
+        ...currentTransformedState,
+        endInstant: timestamp,
+      };
+
+      tracingData.set(resourceIdPerCloudformation, newTransformedState);
+
+      continue;
+    }
+
+    if (resourceStatus === "UPDATE_IN_PROGRESS") {
+      //TODO - incorporate the startInstant & endInstant so this satisfies TS (and/or adjust the typings all around this)
+      const currentTransformedState: ISpanData =
+        tracingData.get(resourceIdPerCloudformation) ?? {
+          childSpanIds: new Set<string>(),
+          name: resourceIdPerCloudformation,
+        };
+
+      const newTransformedState = {
+        ...currentTransformedState,
+        startInstant: timestamp,
+      };
+
+      tracingData.set(resourceIdPerCloudformation, newTransformedState);
+
+      continue;
+    }
+  }
 
   return {
     spanDataById: tracingData,
