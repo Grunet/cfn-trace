@@ -27,6 +27,20 @@ Deno.test("Correctly transforms a typical nested stack's events", async () => {
                   },
                   {
                     //TODO - make this actually satisfy the type definition...
+                    resourceIdPerCloudformation: "TheEcsCluster",
+                    resourceStatus: "UPDATE_COMPLETE",
+                    resourceType: "AWS::ECS::Cluster",
+                    timestamp: new Date("2022-04-11T00:00:10.000Z"),
+                  },
+                  {
+                    //TODO - make this actually satisfy the type definition...
+                    resourceIdPerCloudformation: "TheEcsCluster",
+                    resourceStatus: "UPDATE_IN_PROGRESS",
+                    resourceType: "AWS::ECS::Cluster",
+                    timestamp: new Date("2022-04-11T00:00:05.000Z"),
+                  },
+                  {
+                    //TODO - make this actually satisfy the type definition...
                     resourceIdPerCloudformation: "rootStackName",
                     resourceStatus: "UPDATE_IN_PROGRESS",
                     resourceType: "AWS::Cloudformation::Stack",
@@ -52,6 +66,12 @@ Deno.test("Correctly transforms a typical nested stack's events", async () => {
     name: "rootStackName",
     startInstant: new Date("2022-04-11T00:00:00.000Z"),
     endInstant: new Date("2022-04-11T00:00:30.000Z"),
+  });
+  spanDataById.set("TheEcsCluster", {
+    childSpanIds: new Set<string>(),
+    name: "TheEcsCluster",
+    startInstant: new Date("2022-04-11T00:00:05.000Z"),
+    endInstant: new Date("2022-04-11T00:00:10.000Z"),
   });
 
   const expectedOutputs: ITracingData = {
