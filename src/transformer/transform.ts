@@ -25,7 +25,7 @@ async function transformStackEventDataIntoTracingData(
 ): Promise<ITracingData> {
   const { stackName, dependencies: { cloudformationClientAdapter } } = inputs;
 
-  const tracingData = new Map<string, ISpanData>();
+  const spanDataById = new Map<string, ISpanData>();
 
   const currentStackName = stackName;
 
@@ -47,7 +47,7 @@ async function transformStackEventDataIntoTracingData(
     if (resourceStatus === "UPDATE_COMPLETE") {
       //TODO - incorporate the startInstant & endInstant so this satisfies TS (and/or adjust the typings all around this)
       const currentTransformedState: ISpanData =
-        tracingData.get(resourceIdPerCloudformation) ?? {
+        spanDataById.get(resourceIdPerCloudformation) ?? {
           childSpanIds: new Set<string>(),
           name: resourceIdPerCloudformation,
         };
@@ -57,7 +57,7 @@ async function transformStackEventDataIntoTracingData(
         endInstant: timestamp,
       };
 
-      tracingData.set(resourceIdPerCloudformation, newTransformedState);
+      spanDataById.set(resourceIdPerCloudformation, newTransformedState);
 
       continue;
     }
@@ -65,7 +65,7 @@ async function transformStackEventDataIntoTracingData(
     if (resourceStatus === "UPDATE_IN_PROGRESS") {
       //TODO - incorporate the startInstant & endInstant so this satisfies TS (and/or adjust the typings all around this)
       const currentTransformedState: ISpanData =
-        tracingData.get(resourceIdPerCloudformation) ?? {
+        spanDataById.get(resourceIdPerCloudformation) ?? {
           childSpanIds: new Set<string>(),
           name: resourceIdPerCloudformation,
         };
@@ -75,13 +75,13 @@ async function transformStackEventDataIntoTracingData(
         startInstant: timestamp,
       };
 
-      tracingData.set(resourceIdPerCloudformation, newTransformedState);
+      spanDataById.set(resourceIdPerCloudformation, newTransformedState);
 
       continue;
     }
   }
 
-  const spanDataForCurrentStack = tracingData.get(currentStackName);
+  const spanDataForCurrentStack = spanDataById.get(currentStackName);
   if (!spanDataForCurrentStack) {
     throw new Error(
       `Span could not be constructed for stack named ${currentStackName}`,
@@ -93,10 +93,10 @@ async function transformStackEventDataIntoTracingData(
     childSpanIds: resourceIdsOtherThanTheCurrentStack,
   };
 
-  tracingData.set(currentStackName, spanDataForCurrentStackWithChildSpanIds);
+  spanDataById.set(currentStackName, spanDataForCurrentStackWithChildSpanIds);
 
   return {
-    spanDataById: tracingData,
+    spanDataById,
   };
 }
 
