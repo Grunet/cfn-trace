@@ -69,6 +69,8 @@ async function __transformStackEventDataIntoTracingData({
   //TODO - this is pretty grotty
   const directlyNestedStackDataByStackName = new Map<string, string>();
 
+  let currentStackArn: string | undefined; //TODO - is this always guaranteed to be populated after the loop? (see usage below)
+
   for (
     const {
       resourceIdPerCloudformation,
@@ -78,6 +80,12 @@ async function __transformStackEventDataIntoTracingData({
       timestamp,
     } of stackEvents
   ) {
+    if (resourceIdPerCloudformation === currentStackName) {
+      if (resourceIdPerTheServiceItsFrom) {
+        currentStackArn = resourceIdPerTheServiceItsFrom;
+      }
+    }
+
     if (
       (resourceIdPerCloudformation === currentStackName) && !createSpanForStack
     ) {
@@ -104,7 +112,11 @@ async function __transformStackEventDataIntoTracingData({
     if (resourceStatus === "UPDATE_COMPLETE") {
       //TODO - incorporate the startInstant & endInstant so this satisfies TS (and/or adjust the typings all around this)
       const currentTransformedState: ISpanData = spanDataByConstructedId.get(
-        constructId({ resourceIdPerCloudformation, resourceType }),
+        constructId({
+          resourceIdPerCloudformation,
+          resourceIdPerTheServiceItsFrom,
+          resourceType,
+        }),
       ) ?? {
         childSpanIds: new Set<string>(),
         name: resourceIdPerCloudformation,
@@ -116,7 +128,11 @@ async function __transformStackEventDataIntoTracingData({
       };
 
       spanDataByConstructedId.set(
-        constructId({ resourceIdPerCloudformation, resourceType }),
+        constructId({
+          resourceIdPerCloudformation,
+          resourceIdPerTheServiceItsFrom,
+          resourceType,
+        }),
         newTransformedState,
       );
 
@@ -126,7 +142,11 @@ async function __transformStackEventDataIntoTracingData({
     if (resourceStatus === "UPDATE_IN_PROGRESS") {
       //TODO - incorporate the startInstant & endInstant so this satisfies TS (and/or adjust the typings all around this)
       const currentTransformedState: ISpanData = spanDataByConstructedId.get(
-        constructId({ resourceIdPerCloudformation, resourceType }),
+        constructId({
+          resourceIdPerCloudformation,
+          resourceIdPerTheServiceItsFrom,
+          resourceType,
+        }),
       ) ?? {
         childSpanIds: new Set<string>(),
         name: resourceIdPerCloudformation,
@@ -138,7 +158,11 @@ async function __transformStackEventDataIntoTracingData({
       };
 
       spanDataByConstructedId.set(
-        constructId({ resourceIdPerCloudformation, resourceType }),
+        constructId({
+          resourceIdPerCloudformation,
+          resourceIdPerTheServiceItsFrom,
+          resourceType,
+        }),
         newTransformedState,
       );
 
@@ -149,6 +173,7 @@ async function __transformStackEventDataIntoTracingData({
   const spanDataForCurrentStack = spanDataByConstructedId.get(
     constructId({
       resourceIdPerCloudformation: stackResourceIdFromWithinParentStack,
+      resourceIdPerTheServiceItsFrom: currentStackArn ?? "",
       resourceType: "AWS::Cloudformation::Stack",
     }),
   );
@@ -166,6 +191,7 @@ async function __transformStackEventDataIntoTracingData({
   spanDataByConstructedId.set(
     constructId({
       resourceIdPerCloudformation: stackResourceIdFromWithinParentStack,
+      resourceIdPerTheServiceItsFrom: currentStackArn ?? "",
       resourceType: "AWS::Cloudformation::Stack",
     }),
     spanDataForCurrentStackWithChildSpanIds,
@@ -189,12 +215,14 @@ async function __transformStackEventDataIntoTracingData({
 
 interface IConstructIdInputs {
   resourceIdPerCloudformation: string;
+  resourceIdPerTheServiceItsFrom: string;
   resourceType: string;
 }
 function constructId(
-  { resourceIdPerCloudformation, resourceType }: IConstructIdInputs,
+  { resourceIdPerCloudformation, resourceIdPerTheServiceItsFrom, resourceType }:
+    IConstructIdInputs,
 ) {
-  return `${resourceIdPerCloudformation}-${resourceType}`;
+  return `${resourceIdPerCloudformation}-${resourceIdPerTheServiceItsFrom}-${resourceType}`;
 }
 
 export { transformStackEventDataIntoTracingData };
