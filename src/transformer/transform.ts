@@ -28,24 +28,37 @@ async function transformStackEventDataIntoTracingData(
   const spanDataById = new Map<string, ISpanData>();
 
   //Mutates spanDataById
-  await __transformStackEventDataIntoTracingData(
+  await __transformStackEventDataIntoTracingData({
     stackName,
-    spanDataById,
     cloudformationClientAdapter,
-  );
+    spanDataById,
+    stackResourceIdFromWithinParentStack: stackName, //TODO - clarify why this is needed to work
+    createSpanForStack: true,
+  });
 
   return {
     spanDataById,
   };
 }
 
-async function __transformStackEventDataIntoTracingData(
-  stackName: string,
-  spanDataById: Map<string, ISpanData>,
-  cloudformationClientAdapter: ICloudformationClientAdapter,
-) {
+interface IPrivateRecursiveInputs {
+  stackName: string;
+  cloudformationClientAdapter: ICloudformationClientAdapter;
+  spanDataById: Map<string, ISpanData>;
+  stackResourceIdFromWithinParentStack: string;
+  createSpanForStack: boolean;
+}
+
+async function __transformStackEventDataIntoTracingData({
+  stackName,
+  cloudformationClientAdapter,
+  spanDataById,
+  stackResourceIdFromWithinParentStack,
+  createSpanForStack,
+}: IPrivateRecursiveInputs) {
   const currentStackName = stackName;
 
+  //TODO - combine "stackName" and "cloudformationClientAdapter" into a delegate that can be constructed then passed instead
   const { stackEvents } = await cloudformationClientAdapter
     .getEventsFromMostRecentDeploy({
       stackName: currentStackName,
@@ -53,10 +66,37 @@ async function __transformStackEventDataIntoTracingData(
 
   const resourceIdsOtherThanTheCurrentStack = new Set<string>();
 
+  //TODO - this is pretty grotty
+  const directlyNestedStackDataByStackName = new Map<string, string>();
+
   for (
-    const { resourceIdPerCloudformation, resourceStatus, timestamp }
-      of stackEvents
+    const {
+      resourceIdPerCloudformation,
+      resourceIdPerTheServiceItsFrom,
+      resourceStatus,
+      resourceType,
+      timestamp,
+    } of stackEvents
   ) {
+    if (
+      (resourceIdPerCloudformation === currentStackName) && !createSpanForStack
+    ) {
+      //It should have already made a span for the stack while looking at it as a resource in its parent stack
+      continue;
+    }
+
+    if (
+      (resourceType === "AWS::Cloudformation::Stack") &&
+      (resourceIdPerCloudformation !== currentStackName)
+    ) {
+      //The string being operated on should be the ARN in this case
+      const nestedStackName = resourceIdPerTheServiceItsFrom.split("/")[1];
+      directlyNestedStackDataByStackName.set(
+        nestedStackName,
+        resourceIdPerCloudformation,
+      );
+    }
+
     if (resourceIdPerCloudformation !== currentStackName) {
       resourceIdsOtherThanTheCurrentStack.add(resourceIdPerCloudformation);
     }
@@ -98,7 +138,9 @@ async function __transformStackEventDataIntoTracingData(
     }
   }
 
-  const spanDataForCurrentStack = spanDataById.get(currentStackName);
+  const spanDataForCurrentStack = spanDataById.get(
+    stackResourceIdFromWithinParentStack,
+  );
   if (!spanDataForCurrentStack) {
     throw new Error(
       `Span could not be constructed for stack named ${currentStackName}`,
@@ -110,7 +152,25 @@ async function __transformStackEventDataIntoTracingData(
     childSpanIds: resourceIdsOtherThanTheCurrentStack,
   };
 
-  spanDataById.set(currentStackName, spanDataForCurrentStackWithChildSpanIds);
+  spanDataById.set(
+    stackResourceIdFromWithinParentStack,
+    spanDataForCurrentStackWithChildSpanIds,
+  );
+
+  //This could probably be done more in parallel with a Promise.all***, but keeping things simple for now in case AWS rate limiting bites
+  for (
+    const [nestedStackName, nestedStackResourceIdFromParentStack]
+      of directlyNestedStackDataByStackName
+  ) {
+    await __transformStackEventDataIntoTracingData({
+      stackName: nestedStackName,
+      cloudformationClientAdapter,
+      spanDataById,
+      stackResourceIdFromWithinParentStack:
+        nestedStackResourceIdFromParentStack,
+      createSpanForStack: false,
+    });
+  }
 }
 
 export { transformStackEventDataIntoTracingData };

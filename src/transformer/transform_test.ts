@@ -79,6 +79,20 @@ Deno.test("Correctly transforms a typical nested stack's events", async () => {
                   },
                   {
                     //TODO - make this actually satisfy the type definition...
+                    resourceIdPerCloudformation: "TheEcsService",
+                    resourceStatus: "UPDATE_COMPLETE",
+                    resourceType: "AWS::ECS::SERVICE",
+                    timestamp: new Date("2022-04-11T00:00:18.000Z"),
+                  },
+                  {
+                    //TODO - make this actually satisfy the type definition...
+                    resourceIdPerCloudformation: "TheEcsService",
+                    resourceStatus: "UPDATE_IN_PROGRESS",
+                    resourceType: "AWS::ECS::SERVICE",
+                    timestamp: new Date("2022-04-11T00:00:17.000Z"),
+                  },
+                  {
+                    //TODO - make this actually satisfy the type definition...
                     resourceIdPerCloudformation:
                       "rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA",
                     resourceStatus: "UPDATE_IN_PROGRESS",
@@ -100,6 +114,7 @@ Deno.test("Correctly transforms a typical nested stack's events", async () => {
 
   //ASSERT
   const spanDataById = new Map<string, ISpanData>();
+  //From root stack
   spanDataById.set("rootStackName", {
     childSpanIds: new Set<string>([
       "TheEcsCluster",
@@ -115,11 +130,21 @@ Deno.test("Correctly transforms a typical nested stack's events", async () => {
     startInstant: new Date("2022-04-11T00:00:05.000Z"),
     endInstant: new Date("2022-04-11T00:00:10.000Z"),
   });
+  //1st nested stack as resource of the root stack
   spanDataById.set("FirstNestedStackResourceName", {
-    childSpanIds: new Set<string>(),
+    childSpanIds: new Set<string>([
+      "TheEcsService",
+    ]),
     name: "FirstNestedStackResourceName",
     startInstant: new Date("2022-04-11T00:00:15.000Z"),
     endInstant: new Date("2022-04-11T00:00:20.000Z"),
+  });
+  //From 1st nested stack's resources
+  spanDataById.set("TheEcsService", {
+    childSpanIds: new Set<string>(),
+    name: "TheEcsService",
+    startInstant: new Date("2022-04-11T00:00:17.000Z"),
+    endInstant: new Date("2022-04-11T00:00:18.000Z"),
   });
 
   const expectedOutputs: ITracingData = {
