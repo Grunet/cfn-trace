@@ -27,6 +27,23 @@ async function transformStackEventDataIntoTracingData(
 
   const spanDataById = new Map<string, ISpanData>();
 
+  //Mutates spanDataById
+  await __transformStackEventDataIntoTracingData(
+    stackName,
+    spanDataById,
+    cloudformationClientAdapter,
+  );
+
+  return {
+    spanDataById,
+  };
+}
+
+async function __transformStackEventDataIntoTracingData(
+  stackName: string,
+  spanDataById: Map<string, ISpanData>,
+  cloudformationClientAdapter: ICloudformationClientAdapter,
+) {
   const currentStackName = stackName;
 
   const { stackEvents } = await cloudformationClientAdapter
@@ -94,10 +111,6 @@ async function transformStackEventDataIntoTracingData(
   };
 
   spanDataById.set(currentStackName, spanDataForCurrentStackWithChildSpanIds);
-
-  return {
-    spanDataById,
-  };
 }
 
 export { transformStackEventDataIntoTracingData };
