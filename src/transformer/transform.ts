@@ -135,8 +135,6 @@ async function __transformStackEventDataIntoTracingData({
         }),
         newTransformedState,
       );
-
-      continue;
     }
 
     if (resourceStatus === "UPDATE_IN_PROGRESS") {
@@ -165,8 +163,6 @@ async function __transformStackEventDataIntoTracingData({
         }),
         newTransformedState,
       );
-
-      continue;
     }
   }
 
