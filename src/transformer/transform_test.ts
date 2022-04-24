@@ -81,14 +81,14 @@ Deno.test("Correctly transforms a typical nested stack's events", async () => {
                     //TODO - make this actually satisfy the type definition...
                     resourceIdPerCloudformation: "TheEcsService",
                     resourceStatus: "UPDATE_COMPLETE",
-                    resourceType: "AWS::ECS::SERVICE",
+                    resourceType: "AWS::ECS::Service",
                     timestamp: new Date("2022-04-11T00:00:18.000Z"),
                   },
                   {
                     //TODO - make this actually satisfy the type definition...
                     resourceIdPerCloudformation: "TheEcsService",
                     resourceStatus: "UPDATE_IN_PROGRESS",
-                    resourceType: "AWS::ECS::SERVICE",
+                    resourceType: "AWS::ECS::Service",
                     timestamp: new Date("2022-04-11T00:00:17.000Z"),
                   },
                   {
@@ -113,9 +113,9 @@ Deno.test("Correctly transforms a typical nested stack's events", async () => {
   const outputs = await transformStackEventDataIntoTracingData(inputs);
 
   //ASSERT
-  const spanDataById = new Map<string, ISpanData>();
+  const spanDataByConstructedId = new Map<string, ISpanData>();
   //From root stack
-  spanDataById.set("rootStackName", {
+  spanDataByConstructedId.set("rootStackName-AWS::Cloudformation::Stack", {
     childSpanIds: new Set<string>([
       "TheEcsCluster",
       "FirstNestedStackResourceName",
@@ -124,14 +124,14 @@ Deno.test("Correctly transforms a typical nested stack's events", async () => {
     startInstant: new Date("2022-04-11T00:00:00.000Z"),
     endInstant: new Date("2022-04-11T00:00:30.000Z"),
   });
-  spanDataById.set("TheEcsCluster", {
+  spanDataByConstructedId.set("TheEcsCluster-AWS::ECS::Cluster", {
     childSpanIds: new Set<string>(),
     name: "TheEcsCluster",
     startInstant: new Date("2022-04-11T00:00:05.000Z"),
     endInstant: new Date("2022-04-11T00:00:10.000Z"),
   });
   //1st nested stack as resource of the root stack
-  spanDataById.set("FirstNestedStackResourceName", {
+  spanDataByConstructedId.set("FirstNestedStackResourceName-AWS::Cloudformation::Stack", {
     childSpanIds: new Set<string>([
       "TheEcsService",
     ]),
@@ -140,7 +140,7 @@ Deno.test("Correctly transforms a typical nested stack's events", async () => {
     endInstant: new Date("2022-04-11T00:00:20.000Z"),
   });
   //From 1st nested stack's resources
-  spanDataById.set("TheEcsService", {
+  spanDataByConstructedId.set("TheEcsService-AWS::ECS::Service", {
     childSpanIds: new Set<string>(),
     name: "TheEcsService",
     startInstant: new Date("2022-04-11T00:00:17.000Z"),
@@ -148,7 +148,7 @@ Deno.test("Correctly transforms a typical nested stack's events", async () => {
   });
 
   const expectedOutputs: ITracingData = {
-    spanDataById,
+    spanDataByConstructedId,
   };
 
   assertEquals(outputs, expectedOutputs);
