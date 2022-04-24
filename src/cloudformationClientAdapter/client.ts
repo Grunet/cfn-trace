@@ -173,4 +173,4 @@ function createCloudformationClientAdapter(
 }
 
 export { createCloudformationClientAdapter };
-export type { ICloudformationClientAdapter };
+export type { IAdaptedStackEvent, ICloudformationClientAdapter };

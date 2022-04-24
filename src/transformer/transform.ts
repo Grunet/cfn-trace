@@ -1,4 +1,7 @@
-import { ICloudformationClientAdapter } from "../cloudformationClientAdapter/client.ts";
+import {
+  IAdaptedStackEvent,
+  ICloudformationClientAdapter,
+} from "../cloudformationClientAdapter/client.ts";
 
 interface IInputs {
   stackName: string;
@@ -69,29 +72,22 @@ async function __transformStackEventDataIntoTracingData({
   //TODO - this is pretty grotty
   const directlyNestedStackDataByStackName = new Map<string, string>();
 
-  let currentStackArn: string | undefined; //TODO - is this always guaranteed to be populated after the loop? (see usage below)
+  const { getStackArn, lookForStackArnInEventData } = createStackArnFinder({
+    stackName: currentStackName,
+  });
 
   for (
+    const stackEvent of stackEvents
+  ) {
     const {
       resourceIdPerCloudformation,
       resourceIdPerTheServiceItsFrom,
       resourceStatus,
       resourceType,
       timestamp,
-    } of stackEvents
-  ) {
-    if (resourceIdPerCloudformation === currentStackName) {
-      if (resourceIdPerTheServiceItsFrom) {
-        currentStackArn = resourceIdPerTheServiceItsFrom;
-      }
-    }
+    } = stackEvent;
 
-    if (
-      (resourceIdPerCloudformation === currentStackName) && !createSpanForStack
-    ) {
-      //It should have already made a span for the stack while looking at it as a resource in its parent stack
-      continue;
-    }
+    lookForStackArnInEventData(stackEvent);
 
     if (
       (resourceType === "AWS::Cloudformation::Stack") &&
@@ -107,6 +103,13 @@ async function __transformStackEventDataIntoTracingData({
 
     if (resourceIdPerCloudformation !== currentStackName) {
       resourceIdsOtherThanTheCurrentStack.add(resourceIdPerCloudformation);
+    }
+
+    if (
+      (resourceIdPerCloudformation === currentStackName) && !createSpanForStack
+    ) {
+      //It should have already made a span for the stack while looking at it as a resource in its parent stack
+      continue;
     }
 
     if (resourceStatus === "UPDATE_COMPLETE") {
@@ -169,7 +172,7 @@ async function __transformStackEventDataIntoTracingData({
   const spanDataForCurrentStack = spanDataByConstructedId.get(
     constructId({
       resourceIdPerCloudformation: stackResourceIdFromWithinParentStack,
-      resourceIdPerTheServiceItsFrom: currentStackArn ?? "",
+      resourceIdPerTheServiceItsFrom: getStackArn() ?? "",
       resourceType: "AWS::Cloudformation::Stack",
     }),
   );
@@ -187,7 +190,7 @@ async function __transformStackEventDataIntoTracingData({
   spanDataByConstructedId.set(
     constructId({
       resourceIdPerCloudformation: stackResourceIdFromWithinParentStack,
-      resourceIdPerTheServiceItsFrom: currentStackArn ?? "",
+      resourceIdPerTheServiceItsFrom: getStackArn() ?? "",
       resourceType: "AWS::Cloudformation::Stack",
     }),
     spanDataForCurrentStackWithChildSpanIds,
@@ -207,6 +210,28 @@ async function __transformStackEventDataIntoTracingData({
       createSpanForStack: false,
     });
   }
+}
+
+function createStackArnFinder({ stackName }: { stackName: string }) {
+  let stackArn: string | undefined;
+
+  return {
+    getStackArn() {
+      return stackArn;
+    },
+    lookForStackArnInEventData(
+      { resourceIdPerCloudformation, resourceIdPerTheServiceItsFrom }:
+        IAdaptedStackEvent,
+    ) {
+      if (resourceIdPerCloudformation !== stackName) {
+        return;
+      }
+
+      if (resourceIdPerTheServiceItsFrom) {
+        stackArn = resourceIdPerTheServiceItsFrom;
+      }
+    },
+  };
 }
 
 interface IConstructIdInputs {
