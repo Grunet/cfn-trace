@@ -61,21 +61,23 @@ async function __transformStackEventDataIntoTracingData({
 }: IPrivateRecursiveInputs) {
   const currentStackName = stackName;
 
-  //TODO - combine "stackName" and "cloudformationClientAdapter" into a delegate that can be constructed then passed instead
   const { stackEvents } = await cloudformationClientAdapter
     .getEventsFromMostRecentDeploy({
       stackName: currentStackName,
     });
 
-  const resourceIdsOtherThanTheCurrentStack = new Set<string>();
-
   const { getStackArn, lookForStackArn } = createStackArnFinder({
-    stackName: currentStackName,
+    currentStackName,
   });
+
+  const { setChildSpanIdsForStack, lookForAChildSpan } =
+    createChildSpanIdGatherer({
+      currentStackName,
+    });
 
   const { getDirectlyNestedStackData, lookForAStackResource } =
     createDirectlyNestedStackFinder({
-      currentStackName: currentStackName,
+      currentStackName,
     });
 
   for (
@@ -93,9 +95,7 @@ async function __transformStackEventDataIntoTracingData({
 
     lookForAStackResource(stackEvent);
 
-    if (resourceIdPerCloudformation !== currentStackName) {
-      resourceIdsOtherThanTheCurrentStack.add(resourceIdPerCloudformation);
-    }
+    lookForAChildSpan(stackEvent);
 
     if (
       (resourceIdPerCloudformation === currentStackName) && !createSpanForStack
@@ -161,32 +161,14 @@ async function __transformStackEventDataIntoTracingData({
     }
   }
 
-  const spanDataForCurrentStack = spanDataByConstructedId.get(
-    constructId({
+  setChildSpanIdsForStack({
+    constructedIdOfCurrentStack: constructId({
       resourceIdPerCloudformation: stackResourceIdFromWithinParentStack,
       resourceIdPerTheServiceItsFrom: getStackArn() ?? "",
       resourceType: "AWS::Cloudformation::Stack",
     }),
-  );
-  if (!spanDataForCurrentStack) {
-    throw new Error(
-      `Span could not be constructed for stack named ${currentStackName}`,
-    );
-  }
-
-  const spanDataForCurrentStackWithChildSpanIds = {
-    ...spanDataForCurrentStack,
-    childSpanIds: resourceIdsOtherThanTheCurrentStack,
-  };
-
-  spanDataByConstructedId.set(
-    constructId({
-      resourceIdPerCloudformation: stackResourceIdFromWithinParentStack,
-      resourceIdPerTheServiceItsFrom: getStackArn() ?? "",
-      resourceType: "AWS::Cloudformation::Stack",
-    }),
-    spanDataForCurrentStackWithChildSpanIds,
-  );
+    spanDataByConstructedId,
+  });
 
   const directlyNestedStackData = getDirectlyNestedStackData();
   //This could probably be done more in parallel with a Promise.all***, but keeping things simple for now in case AWS rate limiting bites
@@ -205,7 +187,9 @@ async function __transformStackEventDataIntoTracingData({
   }
 }
 
-function createStackArnFinder({ stackName }: { stackName: string }) {
+function createStackArnFinder(
+  { currentStackName }: { currentStackName: string },
+) {
   let stackArn: string | undefined;
 
   return {
@@ -216,7 +200,7 @@ function createStackArnFinder({ stackName }: { stackName: string }) {
       { resourceIdPerCloudformation, resourceIdPerTheServiceItsFrom }:
         IAdaptedStackEvent,
     ) {
-      if (resourceIdPerCloudformation !== stackName) {
+      if (resourceIdPerCloudformation !== currentStackName) {
         return;
       }
 
@@ -255,6 +239,47 @@ function createDirectlyNestedStackFinder(
           resourceIdPerCloudformation,
           nestedStackName,
         );
+      }
+    },
+  };
+}
+
+function createChildSpanIdGatherer(
+  { currentStackName }: {
+    currentStackName: string;
+  },
+) {
+  const resourceIdsOtherThanTheCurrentStack = new Set<string>();
+
+  return {
+    setChildSpanIdsForStack(
+      { constructedIdOfCurrentStack, spanDataByConstructedId }: {
+        constructedIdOfCurrentStack: string;
+        spanDataByConstructedId: Map<string, ISpanData>;
+      },
+    ) {
+      const spanDataForCurrentStack = spanDataByConstructedId.get(
+        constructedIdOfCurrentStack,
+      );
+      if (!spanDataForCurrentStack) {
+        throw new Error(
+          `Span could not be constructed for stack named ${currentStackName}`,
+        );
+      }
+
+      const spanDataForCurrentStackWithChildSpanIds = {
+        ...spanDataForCurrentStack,
+        childSpanIds: resourceIdsOtherThanTheCurrentStack,
+      };
+
+      spanDataByConstructedId.set(
+        constructedIdOfCurrentStack,
+        spanDataForCurrentStackWithChildSpanIds,
+      );
+    },
+    lookForAChildSpan({ resourceIdPerCloudformation }: IAdaptedStackEvent) {
+      if (resourceIdPerCloudformation !== currentStackName) {
+        resourceIdsOtherThanTheCurrentStack.add(resourceIdPerCloudformation);
       }
     },
   };
