@@ -88,19 +88,17 @@ async function __transformStackEventDataIntoTracingData({
   for (
     const stackEvent of stackEvents
   ) {
-    const {
-      resourceIdPerCloudformation,
-      resourceIdPerTheServiceItsFrom,
-      resourceStatus,
-      resourceType,
-      timestamp,
-    } = stackEvent;
-
     lookForStackArn(stackEvent);
 
     lookForAStackResource(stackEvent);
 
     lookForAnyChildSpan(stackEvent);
+
+    const {
+      resourceIdPerCloudformation,
+      resourceIdPerTheServiceItsFrom,
+      resourceType,
+    } = stackEvent;
 
     createOrUpdateSpanData({
       stackEvent,
