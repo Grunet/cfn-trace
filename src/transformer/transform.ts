@@ -69,12 +69,14 @@ async function __transformStackEventDataIntoTracingData({
 
   const resourceIdsOtherThanTheCurrentStack = new Set<string>();
 
-  //TODO - this is pretty grotty
-  const directlyNestedStackDataByStackName = new Map<string, string>();
-
-  const { getStackArn, lookForStackArnInEventData } = createStackArnFinder({
+  const { getStackArn, lookForStackArn } = createStackArnFinder({
     stackName: currentStackName,
   });
+
+  const { getDirectlyNestedStackData, lookForAStackResource } =
+    createDirectlyNestedStackFinder({
+      currentStackName: currentStackName,
+    });
 
   for (
     const stackEvent of stackEvents
@@ -87,19 +89,9 @@ async function __transformStackEventDataIntoTracingData({
       timestamp,
     } = stackEvent;
 
-    lookForStackArnInEventData(stackEvent);
+    lookForStackArn(stackEvent);
 
-    if (
-      (resourceType === "AWS::Cloudformation::Stack") &&
-      (resourceIdPerCloudformation !== currentStackName)
-    ) {
-      //The string being operated on should be the ARN in this case
-      const nestedStackName = resourceIdPerTheServiceItsFrom.split("/")[1];
-      directlyNestedStackDataByStackName.set(
-        resourceIdPerCloudformation,
-        nestedStackName,
-      );
-    }
+    lookForAStackResource(stackEvent);
 
     if (resourceIdPerCloudformation !== currentStackName) {
       resourceIdsOtherThanTheCurrentStack.add(resourceIdPerCloudformation);
@@ -196,10 +188,11 @@ async function __transformStackEventDataIntoTracingData({
     spanDataForCurrentStackWithChildSpanIds,
   );
 
+  const directlyNestedStackData = getDirectlyNestedStackData();
   //This could probably be done more in parallel with a Promise.all***, but keeping things simple for now in case AWS rate limiting bites
   for (
     const [nestedStackResourceIdFromParentStack, nestedStackName]
-      of directlyNestedStackDataByStackName
+      of directlyNestedStackData
   ) {
     await __transformStackEventDataIntoTracingData({
       stackName: nestedStackName,
@@ -219,7 +212,7 @@ function createStackArnFinder({ stackName }: { stackName: string }) {
     getStackArn() {
       return stackArn;
     },
-    lookForStackArnInEventData(
+    lookForStackArn(
       { resourceIdPerCloudformation, resourceIdPerTheServiceItsFrom }:
         IAdaptedStackEvent,
     ) {
@@ -229,6 +222,39 @@ function createStackArnFinder({ stackName }: { stackName: string }) {
 
       if (resourceIdPerTheServiceItsFrom) {
         stackArn = resourceIdPerTheServiceItsFrom;
+      }
+    },
+  };
+}
+
+function createDirectlyNestedStackFinder(
+  { currentStackName }: { currentStackName: string },
+) {
+  //TODO - this is pretty grotty
+  const directlyNestedStackDataByResourceId = new Map<string, string>();
+
+  return {
+    getDirectlyNestedStackData() {
+      return directlyNestedStackDataByResourceId;
+    },
+    lookForAStackResource(
+      {
+        resourceIdPerCloudformation,
+        resourceIdPerTheServiceItsFrom,
+        resourceType,
+      }: IAdaptedStackEvent,
+    ) {
+      if (
+        (resourceType === "AWS::Cloudformation::Stack") &&
+        (resourceIdPerCloudformation !== currentStackName)
+      ) {
+        //The string being operated on should be the ARN in this case
+        const nestedStackName = resourceIdPerTheServiceItsFrom.split("/")[1];
+
+        directlyNestedStackDataByResourceId.set(
+          resourceIdPerCloudformation,
+          nestedStackName,
+        );
       }
     },
   };
