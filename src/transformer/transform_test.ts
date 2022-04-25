@@ -4,10 +4,11 @@ import {
   ITracingData,
   transformStackEventDataIntoTracingData,
 } from "./transform.ts";
+import { IAdaptedStackEvent } from "../cloudformationClientAdapter/client.ts";
 
 import { assertEquals } from "https://deno.land/std@0.132.0/testing/asserts.ts";
 
-Deno.test("Correctly transforms a typical nested stack's events", async () => {
+Deno.test("Correctly transforms the events from a 2-tier nested stack with 1 non-stack resource in each", async () => {
   //ARRANGE
   const inputs: IInputs = {
     stackName: "rootStackName",
@@ -18,65 +19,58 @@ Deno.test("Correctly transforms a typical nested stack's events", async () => {
             case "rootStackName":
               return Promise.resolve({
                 stackEvents: [
-                  {
-                    //TODO - make this actually satisfy the type definition...
+                  createStackEvent({
                     resourceIdPerCloudformation: "rootStackName",
                     resourceIdPerTheServiceItsFrom:
                       "arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000",
                     resourceStatus: "UPDATE_COMPLETE",
                     resourceType: "AWS::Cloudformation::Stack",
                     timestamp: new Date("2022-04-11T00:00:30.000Z"),
-                  },
-                  {
-                    //TODO - make this actually satisfy the type definition...
+                  }),
+                  createStackEvent({
                     resourceIdPerCloudformation: "FirstNestedStackResourceName",
                     resourceIdPerTheServiceItsFrom:
                       "arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA/00aa00a0-a00a-00aa-0a00-00a0a0a00000",
                     resourceStatus: "UPDATE_COMPLETE",
                     resourceType: "AWS::Cloudformation::Stack",
                     timestamp: new Date("2022-04-11T00:00:20.000Z"),
-                  },
-                  {
-                    //TODO - make this actually satisfy the type definition...
+                  }),
+                  createStackEvent({
                     resourceIdPerCloudformation: "FirstNestedStackResourceName",
                     resourceIdPerTheServiceItsFrom:
                       "arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA/00aa00a0-a00a-00aa-0a00-00a0a0a00000",
                     resourceStatus: "UPDATE_IN_PROGRESS",
                     resourceType: "AWS::Cloudformation::Stack",
                     timestamp: new Date("2022-04-11T00:00:15.000Z"),
-                  },
-                  {
-                    //TODO - make this actually satisfy the type definition...
+                  }),
+                  createStackEvent({
                     resourceIdPerCloudformation: "TheEcsCluster",
                     resourceIdPerTheServiceItsFrom: "TheClusterName",
                     resourceStatus: "UPDATE_COMPLETE",
                     resourceType: "AWS::ECS::Cluster",
                     timestamp: new Date("2022-04-11T00:00:10.000Z"),
-                  },
-                  {
-                    //TODO - make this actually satisfy the type definition...
+                  }),
+                  createStackEvent({
                     resourceIdPerCloudformation: "TheEcsCluster",
                     resourceIdPerTheServiceItsFrom: "TheClusterName",
                     resourceStatus: "UPDATE_IN_PROGRESS",
                     resourceType: "AWS::ECS::Cluster",
                     timestamp: new Date("2022-04-11T00:00:05.000Z"),
-                  },
-                  {
-                    //TODO - make this actually satisfy the type definition...
+                  }),
+                  createStackEvent({
                     resourceIdPerCloudformation: "rootStackName",
                     resourceIdPerTheServiceItsFrom:
                       "arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000",
                     resourceStatus: "UPDATE_IN_PROGRESS",
                     resourceType: "AWS::Cloudformation::Stack",
                     timestamp: new Date("2022-04-11T00:00:00.000Z"),
-                  },
+                  }),
                 ],
               });
             case "rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA":
               return Promise.resolve({
                 stackEvents: [
-                  {
-                    //TODO - make this actually satisfy the type definition...
+                  createStackEvent({
                     resourceIdPerCloudformation:
                       "rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA",
                     resourceIdPerTheServiceItsFrom:
@@ -84,25 +78,22 @@ Deno.test("Correctly transforms a typical nested stack's events", async () => {
                     resourceStatus: "UPDATE_COMPLETE",
                     resourceType: "AWS::Cloudformation::Stack",
                     timestamp: new Date("2022-04-11T00:00:19.000Z"),
-                  },
-                  {
-                    //TODO - make this actually satisfy the type definition...
+                  }),
+                  createStackEvent({
                     resourceIdPerCloudformation: "TheEcsService",
                     resourceIdPerTheServiceItsFrom: "", //Simulates the resource having been newly created during this deploy
                     resourceStatus: "UPDATE_COMPLETE",
                     resourceType: "AWS::ECS::Service",
                     timestamp: new Date("2022-04-11T00:00:18.000Z"),
-                  },
-                  {
-                    //TODO - make this actually satisfy the type definition...
+                  }),
+                  createStackEvent({
                     resourceIdPerCloudformation: "TheEcsService",
                     resourceIdPerTheServiceItsFrom: "", //Simulates the resource having been newly created during this deploy
                     resourceStatus: "UPDATE_IN_PROGRESS",
                     resourceType: "AWS::ECS::Service",
                     timestamp: new Date("2022-04-11T00:00:17.000Z"),
-                  },
-                  {
-                    //TODO - make this actually satisfy the type definition...
+                  }),
+                  createStackEvent({
                     resourceIdPerCloudformation:
                       "rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA",
                     resourceIdPerTheServiceItsFrom:
@@ -110,7 +101,7 @@ Deno.test("Correctly transforms a typical nested stack's events", async () => {
                     resourceStatus: "UPDATE_IN_PROGRESS",
                     resourceType: "AWS::Cloudformation::Stack",
                     timestamp: new Date("2022-04-11T00:00:16.000Z"),
-                  },
+                  }),
                 ],
               });
             default:
@@ -174,3 +165,21 @@ Deno.test("Correctly transforms a typical nested stack's events", async () => {
 
   assertEquals(outputs, expectedOutputs);
 });
+
+function createStackEvent(
+  partialStackEvent: Partial<IAdaptedStackEvent>,
+): IAdaptedStackEvent {
+  return {
+    resourceIdPerCloudformation:
+      partialStackEvent.resourceIdPerCloudformation ?? "unused",
+    resourceIdPerTheServiceItsFrom:
+      partialStackEvent.resourceIdPerTheServiceItsFrom ?? "unused",
+    resourceProperties: partialStackEvent.resourceProperties ?? "unused",
+    resourceStatus: partialStackEvent.resourceStatus ?? "unused",
+    resourceStatusReason: partialStackEvent.resourceStatusReason ?? "unused",
+    resourceType: partialStackEvent.resourceType ?? "unused",
+    stackArn: partialStackEvent.stackArn ?? "unused",
+    stackName: partialStackEvent.stackName ?? "unused",
+    timestamp: partialStackEvent.timestamp ?? new Date(),
+  };
+}
