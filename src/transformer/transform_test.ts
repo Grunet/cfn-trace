@@ -24,7 +24,7 @@ Deno.test("Correctly transforms the events from a 2-tier nested stack with 1 non
                     resourceIdPerTheServiceItsFrom:
                       "arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000",
                     resourceStatus: "UPDATE_COMPLETE",
-                    resourceType: "AWS::Cloudformation::Stack",
+                    resourceType: "AWS::CloudFormation::Stack",
                     timestamp: new Date("2022-04-11T00:00:30.000Z"),
                   }),
                   createStackEvent({
@@ -32,7 +32,7 @@ Deno.test("Correctly transforms the events from a 2-tier nested stack with 1 non
                     resourceIdPerTheServiceItsFrom:
                       "arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA/00aa00a0-a00a-00aa-0a00-00a0a0a00000",
                     resourceStatus: "UPDATE_COMPLETE",
-                    resourceType: "AWS::Cloudformation::Stack",
+                    resourceType: "AWS::CloudFormation::Stack",
                     timestamp: new Date("2022-04-11T00:00:20.000Z"),
                   }),
                   createStackEvent({
@@ -40,7 +40,7 @@ Deno.test("Correctly transforms the events from a 2-tier nested stack with 1 non
                     resourceIdPerTheServiceItsFrom:
                       "arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA/00aa00a0-a00a-00aa-0a00-00a0a0a00000",
                     resourceStatus: "UPDATE_IN_PROGRESS",
-                    resourceType: "AWS::Cloudformation::Stack",
+                    resourceType: "AWS::CloudFormation::Stack",
                     timestamp: new Date("2022-04-11T00:00:15.000Z"),
                   }),
                   createStackEvent({
@@ -62,7 +62,7 @@ Deno.test("Correctly transforms the events from a 2-tier nested stack with 1 non
                     resourceIdPerTheServiceItsFrom:
                       "arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000",
                     resourceStatus: "UPDATE_IN_PROGRESS",
-                    resourceType: "AWS::Cloudformation::Stack",
+                    resourceType: "AWS::CloudFormation::Stack",
                     timestamp: new Date("2022-04-11T00:00:00.000Z"),
                   }),
                 ],
@@ -76,7 +76,7 @@ Deno.test("Correctly transforms the events from a 2-tier nested stack with 1 non
                     resourceIdPerTheServiceItsFrom:
                       "arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA/00aa00a0-a00a-00aa-0a00-00a0a0a00000",
                     resourceStatus: "UPDATE_COMPLETE",
-                    resourceType: "AWS::Cloudformation::Stack",
+                    resourceType: "AWS::CloudFormation::Stack",
                     timestamp: new Date("2022-04-11T00:00:19.000Z"),
                   }),
                   createStackEvent({
@@ -99,7 +99,7 @@ Deno.test("Correctly transforms the events from a 2-tier nested stack with 1 non
                     resourceIdPerTheServiceItsFrom:
                       "arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA/00aa00a0-a00a-00aa-0a00-00a0a0a00000",
                     resourceStatus: "UPDATE_IN_PROGRESS",
-                    resourceType: "AWS::Cloudformation::Stack",
+                    resourceType: "AWS::CloudFormation::Stack",
                     timestamp: new Date("2022-04-11T00:00:16.000Z"),
                   }),
                 ],
@@ -119,7 +119,7 @@ Deno.test("Correctly transforms the events from a 2-tier nested stack with 1 non
   const spanDataByConstructedId = new Map<string, ISpanData>();
   //From root stack
   spanDataByConstructedId.set(
-    "rootStackName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::Cloudformation::Stack",
+    "rootStackName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack",
     {
       childSpanIds: new Set<string>([
         "TheEcsCluster",
@@ -141,7 +141,7 @@ Deno.test("Correctly transforms the events from a 2-tier nested stack with 1 non
   );
   //1st nested stack as resource of the root stack
   spanDataByConstructedId.set(
-    "FirstNestedStackResourceName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::Cloudformation::Stack",
+    "FirstNestedStackResourceName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack",
     {
       childSpanIds: new Set<string>([
         "TheEcsService",

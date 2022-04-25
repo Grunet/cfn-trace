@@ -118,7 +118,7 @@ async function __transformStackEventDataIntoTracingData({
     constructedIdOfCurrentStack: constructId({
       resourceIdPerCloudformation: stackResourceIdFromWithinParentStack,
       resourceIdPerTheServiceItsFrom: getStackArn() ?? "",
-      resourceType: "AWS::Cloudformation::Stack",
+      resourceType: "AWS::CloudFormation::Stack",
     }),
     spanDataByConstructedId,
   });
@@ -182,7 +182,7 @@ function createDirectlyNestedStackFinder(
       }: IAdaptedStackEvent,
     ) {
       if (
-        (resourceType === "AWS::Cloudformation::Stack") &&
+        (resourceType === "AWS::CloudFormation::Stack") &&
         (resourceIdPerCloudformation !== currentStackName)
       ) {
         //The string being operated on should be the ARN in this case
