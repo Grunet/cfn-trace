@@ -5,6 +5,9 @@ import versionDataFromFile from "./../version.json" assert { type: "json" };
 import {
   createCloudformationClientAdapter,
 } from "./cloudformationClientAdapter/client.ts";
+import {
+  transformStackEventDataIntoTracingData,
+} from "./transformer/transform.ts";
 
 const cliArgs = parse(Deno.args);
 
@@ -16,5 +19,6 @@ await invoke({
     secretAccessKey: Deno.env.get("AWS_SECRET_ACCESS_KEY") ?? "",
     region: Deno.env.get("AWS_DEFAULT_REGION") ?? "",
   }),
+  transformStackEventDataIntoTracingData,
   logger: console,
 }); //TODO - validate this input with zod, iots, etc...

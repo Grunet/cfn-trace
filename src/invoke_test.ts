@@ -38,6 +38,9 @@ Deno.test("Passing --version logs the version to the console", async () => {
         return Promise.resolve({ stackEvents: [] });
       },
     },
+    transformStackEventDataIntoTracingData: () => {
+      return Promise.resolve({ spanDataByConstructedId: new Map() });
+    },
     logger: mockLogger,
   });
 

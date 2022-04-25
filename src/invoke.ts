@@ -1,11 +1,16 @@
 import {
   ICloudformationClientAdapter,
 } from "./cloudformationClientAdapter/client.ts";
+import {
+  transformStackEventDataIntoTracingData,
+} from "./transformer/transform.ts"; //Only depend on the function signature/interface/types here
 
 interface IInputs {
   cliArgs: IExpectedCliArgs;
   versionData: IVersionData;
   cloudformationClientAdapter: ICloudformationClientAdapter;
+  transformStackEventDataIntoTracingData:
+    typeof transformStackEventDataIntoTracingData;
   logger: ILogger;
 }
 
@@ -23,18 +28,32 @@ interface ILogger {
 }
 
 async function invoke(
-  { cliArgs, logger, versionData, cloudformationClientAdapter }: IInputs,
+  {
+    cliArgs,
+    logger,
+    versionData,
+    cloudformationClientAdapter,
+    transformStackEventDataIntoTracingData,
+  }: IInputs,
 ) {
   if (cliArgs["version"] === true) {
     logger.info(versionData.version);
   }
 
   if (cliArgs["stack-name"]) {
-    const { stackEvents } = await cloudformationClientAdapter
-      .getEventsFromMostRecentDeploy({
+    const { spanDataByConstructedId } =
+      await transformStackEventDataIntoTracingData({
         stackName: cliArgs["stack-name"],
+        dependencies: {
+          cloudformationClientAdapter,
+        },
       });
-    console.log(stackEvents); //TODO - remove this later
+
+    //TODO - remove/adapt this later
+    for (const [key, value] of spanDataByConstructedId) {
+      console.log(key);
+      console.log(value);
+    }
   }
 }
 
