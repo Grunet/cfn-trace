@@ -70,7 +70,7 @@ async function __transformStackEventDataIntoTracingData({
     currentStackName,
   });
 
-  const { setChildSpanIdsForStack, lookForAChildSpan } =
+  const { setChildSpanIdsForStack, lookForAnyChildSpan } =
     createChildSpanIdGatherer({
       currentStackName,
     });
@@ -95,7 +95,7 @@ async function __transformStackEventDataIntoTracingData({
 
     lookForAStackResource(stackEvent);
 
-    lookForAChildSpan(stackEvent);
+    lookForAnyChildSpan(stackEvent);
 
     if (
       (resourceIdPerCloudformation === currentStackName) && !createSpanForStack
@@ -277,7 +277,7 @@ function createChildSpanIdGatherer(
         spanDataForCurrentStackWithChildSpanIds,
       );
     },
-    lookForAChildSpan({ resourceIdPerCloudformation }: IAdaptedStackEvent) {
+    lookForAnyChildSpan({ resourceIdPerCloudformation }: IAdaptedStackEvent) {
       if (resourceIdPerCloudformation !== currentStackName) {
         resourceIdsOtherThanTheCurrentStack.add(resourceIdPerCloudformation);
       }
