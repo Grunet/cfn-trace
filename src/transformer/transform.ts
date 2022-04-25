@@ -80,6 +80,11 @@ async function __transformStackEventDataIntoTracingData({
       currentStackName,
     });
 
+  const { createOrUpdateSpanData } = createSpanDataUpdater({
+    currentStackName,
+    createSpanForStack,
+  });
+
   for (
     const stackEvent of stackEvents
   ) {
@@ -97,68 +102,7 @@ async function __transformStackEventDataIntoTracingData({
 
     lookForAnyChildSpan(stackEvent);
 
-    if (
-      (resourceIdPerCloudformation === currentStackName) && !createSpanForStack
-    ) {
-      //It should have already made a span for the stack while looking at it as a resource in its parent stack
-      continue;
-    }
-
-    if (resourceStatus === "UPDATE_COMPLETE") {
-      //TODO - incorporate the startInstant & endInstant so this satisfies TS (and/or adjust the typings all around this)
-      const currentTransformedState: ISpanData = spanDataByConstructedId.get(
-        constructId({
-          resourceIdPerCloudformation,
-          resourceIdPerTheServiceItsFrom,
-          resourceType,
-        }),
-      ) ?? {
-        childSpanIds: new Set<string>(),
-        name: resourceIdPerCloudformation,
-      };
-
-      const newTransformedState = {
-        ...currentTransformedState,
-        endInstant: timestamp,
-      };
-
-      spanDataByConstructedId.set(
-        constructId({
-          resourceIdPerCloudformation,
-          resourceIdPerTheServiceItsFrom,
-          resourceType,
-        }),
-        newTransformedState,
-      );
-    }
-
-    if (resourceStatus === "UPDATE_IN_PROGRESS") {
-      //TODO - incorporate the startInstant & endInstant so this satisfies TS (and/or adjust the typings all around this)
-      const currentTransformedState: ISpanData = spanDataByConstructedId.get(
-        constructId({
-          resourceIdPerCloudformation,
-          resourceIdPerTheServiceItsFrom,
-          resourceType,
-        }),
-      ) ?? {
-        childSpanIds: new Set<string>(),
-        name: resourceIdPerCloudformation,
-      };
-
-      const newTransformedState = {
-        ...currentTransformedState,
-        startInstant: timestamp,
-      };
-
-      spanDataByConstructedId.set(
-        constructId({
-          resourceIdPerCloudformation,
-          resourceIdPerTheServiceItsFrom,
-          resourceType,
-        }),
-        newTransformedState,
-      );
-    }
+    createOrUpdateSpanData({ stackEvent, spanDataByConstructedId });
   }
 
   setChildSpanIdsForStack({
@@ -280,6 +224,95 @@ function createChildSpanIdGatherer(
     lookForAnyChildSpan({ resourceIdPerCloudformation }: IAdaptedStackEvent) {
       if (resourceIdPerCloudformation !== currentStackName) {
         resourceIdsOtherThanTheCurrentStack.add(resourceIdPerCloudformation);
+      }
+    },
+  };
+}
+
+function createSpanDataUpdater(
+  { currentStackName, createSpanForStack }: {
+    currentStackName: string;
+    createSpanForStack: boolean;
+  },
+) {
+  return {
+    createOrUpdateSpanData(
+      {
+        stackEvent: {
+          resourceIdPerCloudformation,
+          resourceIdPerTheServiceItsFrom,
+          resourceStatus,
+          resourceType,
+          timestamp,
+        },
+        spanDataByConstructedId,
+      }: {
+        stackEvent: IAdaptedStackEvent;
+        spanDataByConstructedId: Map<string, ISpanData>;
+      },
+    ) {
+      if (
+        (resourceIdPerCloudformation === currentStackName) &&
+        !createSpanForStack
+      ) {
+        //It should have already made a span for the stack while looking at it as a resource in its parent stack
+        return;
+      }
+
+      if (resourceStatus === "UPDATE_COMPLETE") {
+        //TODO - incorporate the startInstant & endInstant so this satisfies TS (and/or adjust the typings all around this)
+        const currentTransformedState: ISpanData = spanDataByConstructedId.get(
+          constructId({
+            resourceIdPerCloudformation,
+            resourceIdPerTheServiceItsFrom,
+            resourceType,
+          }),
+        ) ?? {
+          childSpanIds: new Set<string>(),
+          name: resourceIdPerCloudformation,
+        };
+
+        const newTransformedState = {
+          ...currentTransformedState,
+          endInstant: timestamp,
+        };
+
+        spanDataByConstructedId.set(
+          constructId({
+            resourceIdPerCloudformation,
+            resourceIdPerTheServiceItsFrom,
+            resourceType,
+          }),
+          newTransformedState,
+        );
+      }
+
+      if (resourceStatus === "UPDATE_IN_PROGRESS") {
+        //TODO - incorporate the startInstant & endInstant so this satisfies TS (and/or adjust the typings all around this)
+        const currentTransformedState: ISpanData = spanDataByConstructedId.get(
+          constructId({
+            resourceIdPerCloudformation,
+            resourceIdPerTheServiceItsFrom,
+            resourceType,
+          }),
+        ) ?? {
+          childSpanIds: new Set<string>(),
+          name: resourceIdPerCloudformation,
+        };
+
+        const newTransformedState = {
+          ...currentTransformedState,
+          startInstant: timestamp,
+        };
+
+        spanDataByConstructedId.set(
+          constructId({
+            resourceIdPerCloudformation,
+            resourceIdPerTheServiceItsFrom,
+            resourceType,
+          }),
+          newTransformedState,
+        );
       }
     },
   };
