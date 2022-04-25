@@ -18,9 +18,10 @@ interface ITracingData {
 
 interface ISpanData {
   childSpanIds: Set<string>;
-  name: string;
-  startInstant: Date;
-  endInstant: Date;
+  //TS isn't aware of the structure the stackEvents array SHOULD have, so it needs this to be extra cautious about these pieces of data maybe never existing
+  name?: string;
+  startInstant?: Date;
+  endInstant?: Date;
 }
 
 async function transformStackEventDataIntoTracingData(
@@ -268,7 +269,6 @@ function createSpanDataUpdater(
       }
 
       if (resourceStatus === "UPDATE_COMPLETE") {
-        //TODO - incorporate the startInstant & endInstant so this satisfies TS (and/or adjust the typings all around this)
         const currentTransformedState: ISpanData = spanDataByConstructedId.get(
           constructedIdForTheResource,
         ) ?? {
@@ -288,7 +288,6 @@ function createSpanDataUpdater(
       }
 
       if (resourceStatus === "UPDATE_IN_PROGRESS") {
-        //TODO - incorporate the startInstant & endInstant so this satisfies TS (and/or adjust the typings all around this)
         const currentTransformedState: ISpanData = spanDataByConstructedId.get(
           constructedIdForTheResource,
         ) ?? {
