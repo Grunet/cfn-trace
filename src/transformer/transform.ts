@@ -102,7 +102,15 @@ async function __transformStackEventDataIntoTracingData({
 
     lookForAnyChildSpan(stackEvent);
 
-    createOrUpdateSpanData({ stackEvent, spanDataByConstructedId });
+    createOrUpdateSpanData({
+      stackEvent,
+      constructedIdForTheResource: constructId({
+        resourceIdPerCloudformation,
+        resourceIdPerTheServiceItsFrom,
+        resourceType,
+      }),
+      spanDataByConstructedId,
+    });
   }
 
   setChildSpanIdsForStack({
@@ -240,14 +248,14 @@ function createSpanDataUpdater(
       {
         stackEvent: {
           resourceIdPerCloudformation,
-          resourceIdPerTheServiceItsFrom,
           resourceStatus,
-          resourceType,
           timestamp,
         },
+        constructedIdForTheResource,
         spanDataByConstructedId,
       }: {
         stackEvent: IAdaptedStackEvent;
+        constructedIdForTheResource: string;
         spanDataByConstructedId: Map<string, ISpanData>;
       },
     ) {
@@ -262,11 +270,7 @@ function createSpanDataUpdater(
       if (resourceStatus === "UPDATE_COMPLETE") {
         //TODO - incorporate the startInstant & endInstant so this satisfies TS (and/or adjust the typings all around this)
         const currentTransformedState: ISpanData = spanDataByConstructedId.get(
-          constructId({
-            resourceIdPerCloudformation,
-            resourceIdPerTheServiceItsFrom,
-            resourceType,
-          }),
+          constructedIdForTheResource,
         ) ?? {
           childSpanIds: new Set<string>(),
           name: resourceIdPerCloudformation,
@@ -278,11 +282,7 @@ function createSpanDataUpdater(
         };
 
         spanDataByConstructedId.set(
-          constructId({
-            resourceIdPerCloudformation,
-            resourceIdPerTheServiceItsFrom,
-            resourceType,
-          }),
+          constructedIdForTheResource,
           newTransformedState,
         );
       }
@@ -290,11 +290,7 @@ function createSpanDataUpdater(
       if (resourceStatus === "UPDATE_IN_PROGRESS") {
         //TODO - incorporate the startInstant & endInstant so this satisfies TS (and/or adjust the typings all around this)
         const currentTransformedState: ISpanData = spanDataByConstructedId.get(
-          constructId({
-            resourceIdPerCloudformation,
-            resourceIdPerTheServiceItsFrom,
-            resourceType,
-          }),
+          constructedIdForTheResource,
         ) ?? {
           childSpanIds: new Set<string>(),
           name: resourceIdPerCloudformation,
@@ -306,11 +302,7 @@ function createSpanDataUpdater(
         };
 
         spanDataByConstructedId.set(
-          constructId({
-            resourceIdPerCloudformation,
-            resourceIdPerTheServiceItsFrom,
-            resourceType,
-          }),
+          constructedIdForTheResource,
           newTransformedState,
         );
       }
