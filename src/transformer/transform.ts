@@ -96,8 +96,8 @@ async function __transformStackEventDataIntoTracingData({
       //The string being operated on should be the ARN in this case
       const nestedStackName = resourceIdPerTheServiceItsFrom.split("/")[1];
       directlyNestedStackDataByStackName.set(
-        nestedStackName,
         resourceIdPerCloudformation,
+        nestedStackName,
       );
     }
 
@@ -198,7 +198,7 @@ async function __transformStackEventDataIntoTracingData({
 
   //This could probably be done more in parallel with a Promise.all***, but keeping things simple for now in case AWS rate limiting bites
   for (
-    const [nestedStackName, nestedStackResourceIdFromParentStack]
+    const [nestedStackResourceIdFromParentStack, nestedStackName]
       of directlyNestedStackDataByStackName
   ) {
     await __transformStackEventDataIntoTracingData({
