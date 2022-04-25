@@ -41,12 +41,6 @@ async function invoke(
   }
 
   if (cliArgs["stack-name"]) {
-    // const { stackEvents } = await cloudformationClientAdapter
-    //   .getEventsFromMostRecentDeploy({
-    //     stackName: cliArgs["stack-name"],
-    //   });
-    // console.log(stackEvents); //TODO - remove/adapt this later
-
     const { spanDataByConstructedId } =
       await transformStackEventDataIntoTracingData({
         stackName: cliArgs["stack-name"],
