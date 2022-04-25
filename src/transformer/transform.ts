@@ -166,7 +166,7 @@ function createStackArnFinder(
 function createDirectlyNestedStackFinder(
   { currentStackName }: { currentStackName: string },
 ) {
-  //TODO - this is pretty grotty
+  //TODO - this doesn't feel great to have a map between strings (easy to get mixed up)
   const directlyNestedStackDataByResourceId = new Map<string, string>();
 
   return {
