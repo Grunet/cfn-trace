@@ -122,8 +122,8 @@ Deno.test("Correctly transforms the events from a 2-tier nested stack with 1 non
     "rootStackName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack",
     {
       childSpanIds: new Set<string>([
-        "TheEcsCluster",
-        "FirstNestedStackResourceName",
+        "TheEcsCluster-TheClusterName-AWS::ECS::Cluster",
+        "FirstNestedStackResourceName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack",
       ]),
       name: "rootStackName",
       startInstant: new Date("2022-04-11T00:00:00.000Z"),
@@ -144,7 +144,7 @@ Deno.test("Correctly transforms the events from a 2-tier nested stack with 1 non
     "FirstNestedStackResourceName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack",
     {
       childSpanIds: new Set<string>([
-        "TheEcsService",
+        "TheEcsService--AWS::ECS::Service",
       ]),
       name: "FirstNestedStackResourceName",
       startInstant: new Date("2022-04-11T00:00:15.000Z"),
