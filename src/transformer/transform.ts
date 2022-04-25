@@ -35,7 +35,7 @@ async function transformStackEventDataIntoTracingData(
     stackName,
     cloudformationClientAdapter,
     spanDataByConstructedId,
-    stackResourceIdFromWithinParentStack: stackName, //TODO - clarify why this is needed to work
+    stackResourceIdFromWithinParentStack: stackName, //This isn't quite logically correct for the root stack, but it works out (see comment below)
     createSpanForStack: true,
   });
 
@@ -48,6 +48,8 @@ interface IPrivateRecursiveInputs {
   stackName: string;
   cloudformationClientAdapter: ICloudformationClientAdapter;
   spanDataByConstructedId: Map<string, ISpanData>;
+  //This is needed because of the choice to use the data from the stack when it's a child of its parent stack to create its span (vs the data from its own stack events)
+  //With this decision, there needs to be some way to know what that span was when processing its own stack events, so its child span pointers can be set from there
   stackResourceIdFromWithinParentStack: string;
   createSpanForStack: boolean;
 }
