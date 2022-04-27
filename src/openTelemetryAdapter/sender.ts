@@ -11,11 +11,11 @@ interface ISpanData {
 }
 
 interface ITelemetrySender {
-  sendTracingData(tracingData: ITracingData): void;
+  sendTracingData(tracingData: ITracingData): Promise<void>;
 }
 
 class TelemetrySender implements ITelemetrySender {
-  sendTracingData(tracingData: ITracingData): void {
+  async sendTracingData(tracingData: ITracingData): Promise<void> {
   }
 }
 
