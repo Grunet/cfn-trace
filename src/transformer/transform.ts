@@ -2,6 +2,7 @@ import {
   IAdaptedStackEvent,
   ICloudformationClientAdapter,
 } from "../cloudformationClientAdapter/client.ts";
+import { ISpanData, ITracingData } from "../openTelemetryAdapter/sender.ts";
 
 interface IInputs {
   stackName: string;
@@ -10,18 +11,6 @@ interface IInputs {
 
 interface IDependencies {
   cloudformationClientAdapter: ICloudformationClientAdapter;
-}
-
-interface ITracingData {
-  spanDataByConstructedId: Map<string, ISpanData>;
-}
-
-interface ISpanData {
-  childSpanIds: Set<string>;
-  //TS isn't aware of the structure the stackEvents array SHOULD have, so it needs this to be extra cautious about these pieces of data maybe never existing
-  name?: string;
-  startInstant?: Date;
-  endInstant?: Date;
 }
 
 async function transformStackEventDataIntoTracingData(
