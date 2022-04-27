@@ -10,4 +10,18 @@ interface ISpanData {
   endInstant?: Date;
 }
 
+interface ITelemetrySender {
+  sendTracingData(tracingData: ITracingData): void;
+}
+
+class TelemetrySender implements ITelemetrySender {
+  sendTracingData(tracingData: ITracingData): void {
+  }
+}
+
+function createTelemetrySender(): ITelemetrySender {
+  return new TelemetrySender();
+}
+
+export { createTelemetrySender };
 export type { ISpanData, ITracingData };
