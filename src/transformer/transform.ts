@@ -65,6 +65,11 @@ async function __transformStackEventDataIntoTracingData({
     currentStackName,
   });
 
+  const { getStackConstructedId, lookForStackConstructedId } =
+    createStackConstructedIdFinder({
+      currentStackName,
+    });
+
   const { setChildSpanIdsForStack, lookForAnyChildSpan } =
     createChildSpanIdGatherer({
       currentStackName,
@@ -80,8 +85,6 @@ async function __transformStackEventDataIntoTracingData({
     createSpanForStack,
   });
 
-  let constructedIdForTheCurrentStack: string | undefined;
-
   for (
     const stackEvent of stackEvents
   ) {
@@ -93,13 +96,14 @@ async function __transformStackEventDataIntoTracingData({
 
     lookForStackArn(stackEvent);
 
-    if (resourceIdPerCloudformation === currentStackName) {
-      constructedIdForTheCurrentStack = constructId({
+    lookForStackConstructedId({
+      stackEvent,
+      resourceConstructedId: constructId({
         resourceIdPerCloudformation,
         resourceIdPerTheServiceItsFrom,
         resourceType,
-      });
-    }
+      }),
+    });
 
     lookForAStackResource(stackEvent);
 
@@ -149,7 +153,7 @@ async function __transformStackEventDataIntoTracingData({
   }
 
   return {
-    constructedIdForTheCurrentStack,
+    constructedIdForTheCurrentStack: getStackConstructedId(),
   };
 }
 
@@ -173,6 +177,30 @@ function createStackArnFinder(
       if (resourceIdPerTheServiceItsFrom) {
         stackArn = resourceIdPerTheServiceItsFrom;
       }
+    },
+  };
+}
+
+function createStackConstructedIdFinder(
+  { currentStackName }: { currentStackName: string },
+) {
+  let stackConstructedId: string | undefined;
+
+  return {
+    getStackConstructedId() {
+      return stackConstructedId;
+    },
+    lookForStackConstructedId(
+      { stackEvent: { resourceIdPerCloudformation }, resourceConstructedId }: {
+        stackEvent: IAdaptedStackEvent;
+        resourceConstructedId: string;
+      },
+    ) {
+      if (resourceIdPerCloudformation !== currentStackName) {
+        return;
+      }
+
+      stackConstructedId = resourceConstructedId;
     },
   };
 }
