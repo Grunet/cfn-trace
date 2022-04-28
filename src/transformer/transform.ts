@@ -61,12 +61,13 @@ async function __transformStackEventDataIntoTracingData({
       stackName: currentStackName,
     });
 
-  const { getStackArn, lookForStackArn } = createStackArnFinder({
-    currentStackName,
-  });
+  const { getCurrentStackArn, lookForCurrentStackArn } =
+    createCurrentStackArnFinder({
+      currentStackName,
+    });
 
-  const { getStackConstructedId, lookForStackConstructedId } =
-    createStackConstructedIdFinder({
+  const { getCurrentStackConstructedId, lookForCurrentStackConstructedId } =
+    createCurrentStackConstructedIdFinder({
       currentStackName,
     });
 
@@ -100,9 +101,9 @@ async function __transformStackEventDataIntoTracingData({
       resourceType,
     });
 
-    lookForStackArn(stackEvent);
+    lookForCurrentStackArn(stackEvent);
 
-    lookForStackConstructedId({
+    lookForCurrentStackConstructedId({
       stackEvent,
       constructedIdForTheResource,
     });
@@ -124,7 +125,7 @@ async function __transformStackEventDataIntoTracingData({
   setChildSpanIdsForStack({
     constructedIdOfCurrentStack: constructId({
       resourceIdPerCloudformation: stackResourceIdFromWithinParentStack,
-      resourceIdPerTheServiceItsFrom: getStackArn() ?? "",
+      resourceIdPerTheServiceItsFrom: getCurrentStackArn() ?? "",
       resourceType: "AWS::CloudFormation::Stack",
     }),
     spanDataByConstructedId,
@@ -147,20 +148,20 @@ async function __transformStackEventDataIntoTracingData({
   }
 
   return {
-    constructedIdForTheCurrentStack: getStackConstructedId(),
+    constructedIdForTheCurrentStack: getCurrentStackConstructedId(),
   };
 }
 
-function createStackArnFinder(
+function createCurrentStackArnFinder(
   { currentStackName }: { currentStackName: string },
 ) {
   let stackArn: string | undefined;
 
   return {
-    getStackArn() {
+    getCurrentStackArn() {
       return stackArn;
     },
-    lookForStackArn(
+    lookForCurrentStackArn(
       { resourceIdPerCloudformation, resourceIdPerTheServiceItsFrom }:
         IAdaptedStackEvent,
     ) {
@@ -175,16 +176,16 @@ function createStackArnFinder(
   };
 }
 
-function createStackConstructedIdFinder(
+function createCurrentStackConstructedIdFinder(
   { currentStackName }: { currentStackName: string },
 ) {
   let stackConstructedId: string | undefined;
 
   return {
-    getStackConstructedId() {
+    getCurrentStackConstructedId() {
       return stackConstructedId;
     },
-    lookForStackConstructedId(
+    lookForCurrentStackConstructedId(
       {
         stackEvent: { resourceIdPerCloudformation },
         constructedIdForTheResource,
