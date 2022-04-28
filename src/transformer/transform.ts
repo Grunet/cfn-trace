@@ -94,35 +94,29 @@ async function __transformStackEventDataIntoTracingData({
       resourceType,
     } = stackEvent;
 
+    const constructedIdForTheResource = constructId({
+      resourceIdPerCloudformation,
+      resourceIdPerTheServiceItsFrom,
+      resourceType,
+    });
+
     lookForStackArn(stackEvent);
 
     lookForStackConstructedId({
       stackEvent,
-      resourceConstructedId: constructId({
-        resourceIdPerCloudformation,
-        resourceIdPerTheServiceItsFrom,
-        resourceType,
-      }),
+      constructedIdForTheResource,
     });
 
     lookForAStackResource(stackEvent);
 
     lookForAnyChildSpan({
       stackEvent,
-      constructedIdForTheResource: constructId({
-        resourceIdPerCloudformation,
-        resourceIdPerTheServiceItsFrom,
-        resourceType,
-      }),
+      constructedIdForTheResource,
     });
 
     createOrUpdateSpanData({
       stackEvent,
-      constructedIdForTheResource: constructId({
-        resourceIdPerCloudformation,
-        resourceIdPerTheServiceItsFrom,
-        resourceType,
-      }),
+      constructedIdForTheResource,
       spanDataByConstructedId,
     });
   }
@@ -191,16 +185,19 @@ function createStackConstructedIdFinder(
       return stackConstructedId;
     },
     lookForStackConstructedId(
-      { stackEvent: { resourceIdPerCloudformation }, resourceConstructedId }: {
+      {
+        stackEvent: { resourceIdPerCloudformation },
+        constructedIdForTheResource,
+      }: {
         stackEvent: IAdaptedStackEvent;
-        resourceConstructedId: string;
+        constructedIdForTheResource: string;
       },
     ) {
       if (resourceIdPerCloudformation !== currentStackName) {
         return;
       }
 
-      stackConstructedId = resourceConstructedId;
+      stackConstructedId = constructedIdForTheResource;
     },
   };
 }
