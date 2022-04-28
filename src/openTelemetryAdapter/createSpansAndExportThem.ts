@@ -3,10 +3,11 @@ import {
   ConsoleSpanExporter,
   SimpleSpanProcessor,
 } from "https://cdn.skypack.dev/@opentelemetry/sdk-trace-base?dts";
-import { OTLPTraceExporter } from "https://cdn.skypack.dev/@opentelemetry/exporter-trace-otlp-http";
+import { OTLPTraceExporter } from "https://cdn.skypack.dev/@opentelemetry/exporter-trace-otlp-http@0.27.0";
 import { WebTracerProvider } from "https://cdn.skypack.dev/@opentelemetry/sdk-trace-web?dts";
-import { ZoneContextManager } from "https://cdn.skypack.dev/@opentelemetry/context-zone?dts";
-import { B3Propagator } from "https://cdn.skypack.dev/@opentelemetry/propagator-b3?dts";
+//TODO - determine if these 2 imports can be removed for this case
+// import { ZoneContextManager } from "https://cdn.skypack.dev/@opentelemetry/context-zone?dts";
+// import { B3Propagator } from "https://cdn.skypack.dev/@opentelemetry/propagator-b3?dts";
 
 //navigator.sendBeacon doesn't exist in Deno, so this replaces it's invocations in otel-js with a call to fetch
 import "https://cdn.deno.land/sendbeacon_polyfill/versions/0.0.1/raw/index.js";
@@ -45,6 +46,7 @@ async function createSpansAndExportThem(tracingData: ITracingData) {
   provider.addSpanProcessor(
     new SimpleSpanProcessor(new OTLPTraceExporter()),
   );
+  //TODO - see above comment about this
   //   provider.register({
   //     contextManager: new ZoneContextManager(),
   //     propagator: new B3Propagator(),
@@ -53,31 +55,128 @@ async function createSpansAndExportThem(tracingData: ITracingData) {
 
   const tracer = provider.getTracer("tracer-deno");
 
-  const parentSpan = tracer.startSpan("main");
-  for (let i = 0; i < 10; i += 1) {
-    const ctx = trace.setSpan(context.active(), parentSpan);
-    const span = tracer.startSpan("doWork", undefined, ctx);
+  const { spanDataByConstructedId, rootConstructedId } = tracingData;
+  if (!rootConstructedId) {
+    //TODO - throw instead of returning, since this should never happen unless something's busted upstream
+    return;
+  }
 
-    // simulate some random work.
-    for (let i = 0; i <= Math.floor(Math.random() * 40000000); i += 1) {
-      // empty
+  createSpans(rootConstructedId);
+
+  function createSpans(constructedId: string, ctx = undefined) {
+    const spanRawData = spanDataByConstructedId.get(constructedId);
+    if (!spanRawData) {
+      //TODO - throw instead of returning, since this should never happen unless something's busted upstream
+      return;
     }
 
-    // Set attributes to the span.
-    span.setAttribute("key", "value");
+    const { name, startInstant, endInstant } = spanRawData;
+    if (!name || !startInstant || !endInstant) {
+      //TODO - throw instead of returning, since this should never happen unless something's busted upstream
+      return;
+    }
 
-    // Annotate our span to capture metadata about our operation
-    span.addEvent("invoking doWork");
+    const startTime = [
+      startInstant.getTime() / Math.pow(10, 3), //seconds
+      0, //additional nanoseconds
+    ];
 
-    span.end();
+    const endTime = [
+      endInstant.getTime() / Math.pow(10, 3), //seconds
+      0, //additional nanoseconds
+    ];
+
+    //TODO - get TS to stop complaining about the potential type widening after startTime and endTime are declared above (e.g. if in theory their array lengths were changed before this)
+    const span = tracer.startSpan(name, { startTime }, ctx);
+
+    const { childSpanIds: childConstructedIds } = spanRawData;
+
+    childConstructedIds.forEach((childConstructedId: string) => {
+      const newActiveCtx = trace.setSpan(context.active(), span);
+      createSpans(childConstructedId, newActiveCtx);
+    });
+
+    span.end(endTime);
   }
-  // Be sure to end the span.
-  parentSpan.end();
+
+  // const parentSpan = tracer.startSpan("main");
+  // for (let i = 0; i < 10; i += 1) {
+  //   const ctx = trace.setSpan(context.active(), parentSpan);
+  //   const span = tracer.startSpan("doWork", undefined, ctx);
+
+  //   // simulate some random work.
+  //   for (let i = 0; i <= Math.floor(Math.random() * 40000000); i += 1) {
+  //     // empty
+  //   }
+
+  //   // Set attributes to the span.
+  //   span.setAttribute("key", "value");
+
+  //   // Annotate our span to capture metadata about our operation
+  //   span.addEvent("invoking doWork");
+
+  //   span.end();
+  // }
+  // // Be sure to end the span.
+  // parentSpan.end();
 
   // flush and close the connection.
   await provider.forceFlush();
 }
 
-await createSpansAndExportThem();
+//TODO - turn the below into a manual test harness
+
+//I copied this from the transform_test.ts file
+const spanDataByConstructedId = new Map<string, ISpanData>();
+//From root stack
+const rootConstructedId =
+  "rootStackName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack";
+
+spanDataByConstructedId.set(
+  "rootStackName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack",
+  {
+    childSpanIds: new Set<string>([
+      "TheEcsCluster-TheClusterName-AWS::ECS::Cluster",
+      "FirstNestedStackResourceName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack",
+    ]),
+    name: "rootStackName",
+    startInstant: new Date("2022-04-11T00:00:00.000Z"),
+    endInstant: new Date("2022-04-11T00:00:30.000Z"),
+  },
+);
+spanDataByConstructedId.set(
+  "TheEcsCluster-TheClusterName-AWS::ECS::Cluster",
+  {
+    childSpanIds: new Set<string>(),
+    name: "TheEcsCluster",
+    startInstant: new Date("2022-04-11T00:00:05.000Z"),
+    endInstant: new Date("2022-04-11T00:00:10.000Z"),
+  },
+);
+//1st nested stack as resource of the root stack
+spanDataByConstructedId.set(
+  "FirstNestedStackResourceName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack",
+  {
+    childSpanIds: new Set<string>([
+      "TheEcsService--AWS::ECS::Service",
+    ]),
+    name: "FirstNestedStackResourceName",
+    startInstant: new Date("2022-04-11T00:00:15.000Z"),
+    endInstant: new Date("2022-04-11T00:00:20.000Z"),
+  },
+);
+//From 1st nested stack's resources
+spanDataByConstructedId.set("TheEcsService--AWS::ECS::Service", {
+  childSpanIds: new Set<string>(),
+  name: "TheEcsService",
+  startInstant: new Date("2022-04-11T00:00:17.000Z"),
+  endInstant: new Date("2022-04-11T00:00:18.000Z"),
+});
+
+const expectedOutputs: ITracingData = {
+  spanDataByConstructedId,
+  rootConstructedId,
+};
+await createSpansAndExportThem(expectedOutputs);
 
 export { createSpansAndExportThem };
