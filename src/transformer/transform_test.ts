@@ -118,6 +118,9 @@ Deno.test("Correctly transforms the events from a 2-tier nested stack with 1 non
   //ASSERT
   const spanDataByConstructedId = new Map<string, ISpanData>();
   //From root stack
+  const rootConstructedId =
+    "rootStackName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack";
+
   spanDataByConstructedId.set(
     "rootStackName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack",
     {
@@ -161,6 +164,7 @@ Deno.test("Correctly transforms the events from a 2-tier nested stack with 1 non
 
   const expectedOutputs: ITracingData = {
     spanDataByConstructedId,
+    rootConstructedId,
   };
 
   assertEquals(outputs, expectedOutputs);

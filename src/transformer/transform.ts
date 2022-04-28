@@ -20,17 +20,18 @@ async function transformStackEventDataIntoTracingData(
 
   const spanDataByConstructedId = new Map<string, ISpanData>();
 
-  //Mutates spanDataByConstructedId
-  await __transformStackEventDataIntoTracingData({
-    stackName,
-    cloudformationClientAdapter,
-    spanDataByConstructedId,
-    stackResourceIdFromWithinParentStack: stackName, //This isn't quite logically correct for the root stack, but it works out (see comment below)
-    createSpanForStack: true,
-  });
+  const { constructedIdForTheCurrentStack: rootConstructedId } =
+    await __transformStackEventDataIntoTracingData({
+      stackName,
+      cloudformationClientAdapter,
+      spanDataByConstructedId, //This will mutate/populate spanDataByConstructedId
+      stackResourceIdFromWithinParentStack: stackName, //This isn't quite logically correct for the root stack, but it works out (see comment below)
+      createSpanForStack: true,
+    });
 
   return {
     spanDataByConstructedId,
+    rootConstructedId,
   };
 }
 
@@ -50,7 +51,9 @@ async function __transformStackEventDataIntoTracingData({
   spanDataByConstructedId,
   stackResourceIdFromWithinParentStack,
   createSpanForStack,
-}: IPrivateRecursiveInputs) {
+}: IPrivateRecursiveInputs): Promise<
+  { constructedIdForTheCurrentStack: string | undefined }
+> {
   const currentStackName = stackName;
 
   const { stackEvents } = await cloudformationClientAdapter
@@ -77,6 +80,8 @@ async function __transformStackEventDataIntoTracingData({
     createSpanForStack,
   });
 
+  let constructedIdForTheCurrentStack: string | undefined;
+
   for (
     const stackEvent of stackEvents
   ) {
@@ -87,6 +92,14 @@ async function __transformStackEventDataIntoTracingData({
     } = stackEvent;
 
     lookForStackArn(stackEvent);
+
+    if (resourceIdPerCloudformation === currentStackName) {
+      constructedIdForTheCurrentStack = constructId({
+        resourceIdPerCloudformation,
+        resourceIdPerTheServiceItsFrom,
+        resourceType,
+      });
+    }
 
     lookForAStackResource(stackEvent);
 
@@ -134,6 +147,10 @@ async function __transformStackEventDataIntoTracingData({
       createSpanForStack: false,
     });
   }
+
+  return {
+    constructedIdForTheCurrentStack,
+  };
 }
 
 function createStackArnFinder(

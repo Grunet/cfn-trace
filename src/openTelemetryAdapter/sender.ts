@@ -1,5 +1,6 @@
 interface ITracingData {
   spanDataByConstructedId: Map<string, ISpanData>;
+  rootConstructedId: string | undefined;
 }
 
 interface ISpanData {
