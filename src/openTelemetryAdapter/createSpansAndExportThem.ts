@@ -18,17 +18,14 @@ import { ISpanData, ITracingData } from "./sender.ts";
 async function createSpansAndExportThem(tracingData: ITracingData) {
   const provider = new WebTracerProvider();
 
-  //TODO - consider this
-  // Note: For production consider using the "BatchSpanProcessor" to reduce the number of requests
-  // to your exporter. Using the SimpleSpanProcessor here as it sends the spans immediately to the
-  // exporter without delay
-
+  //TODO - do what's needed with this
   const collectorOptions = {
     url: "http://localhost:4318/", // url is optional and can be omitted - default is http://localhost:4318/v1/traces
     headers: {}, // an optional object containing custom headers to be sent with each request
     concurrencyLimit: 10, // an optional limit on pending requests
   };
 
+  //BatchSpanProcessor may be a better fit if cases come up with a large number of spans
   provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()));
   provider.addSpanProcessor(
     new SimpleSpanProcessor(new OTLPTraceExporter()),
