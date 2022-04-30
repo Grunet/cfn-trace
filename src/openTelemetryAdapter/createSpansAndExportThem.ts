@@ -75,15 +75,8 @@ function createSpanCreator(
       return;
     }
 
-    const startTime: [number, number] = [
-      startInstant.getTime() / Math.pow(10, 3), //seconds
-      0, //additional nanoseconds
-    ];
-
-    const endTime: [number, number] = [
-      endInstant.getTime() / Math.pow(10, 3), //seconds
-      0, //additional nanoseconds
-    ];
+    const startTime = convertInstantToOtelTimeInput(startInstant);
+    const endTime = convertInstantToOtelTimeInput(endInstant);
 
     const span = tracer.startSpan(name, { startTime }, ctx);
 
@@ -100,6 +93,13 @@ function createSpanCreator(
   return {
     recursivelyCreateSpans,
   };
+}
+
+function convertInstantToOtelTimeInput(instant: Date): [number, number] {
+  return [
+    instant.getTime() / Math.pow(10, 3), //seconds
+    0, //additional nanoseconds
+  ];
 }
 
 //TODO - turn the below into a manual test harness
