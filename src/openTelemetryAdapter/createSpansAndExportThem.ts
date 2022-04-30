@@ -1,4 +1,5 @@
 import {
+  Context,
   context,
   trace,
   Tracer,
@@ -58,7 +59,10 @@ function createSpanCreator(
     spanDataByConstructedId: Map<string, ISpanData>;
   },
 ) {
-  function recursivelyCreateSpans(constructedId: string, ctx = undefined) {
+  function recursivelyCreateSpans(
+    constructedId: string,
+    ctx: Context | undefined = undefined,
+  ) {
     const spanRawData = spanDataByConstructedId.get(constructedId);
     if (!spanRawData) {
       //TODO - throw instead of returning, since this should never happen unless something's busted upstream
