@@ -1,3 +1,5 @@
+import { createSpansAndExportThem } from "./createSpansAndExportThem.ts";
+
 interface ITracingData {
   spanDataByConstructedId: Map<string, ISpanData>;
   rootConstructedId: string | undefined;
@@ -17,6 +19,7 @@ interface ITelemetrySender {
 
 class TelemetrySender implements ITelemetrySender {
   async sendTracingData(tracingData: ITracingData): Promise<void> {
+    await createSpansAndExportThem(tracingData);
   }
 }
 
