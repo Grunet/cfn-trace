@@ -11,25 +11,27 @@ import { WebTracerProvider } from "https://cdn.skypack.dev/@opentelemetry/sdk-tr
 
 //navigator.sendBeacon doesn't exist in Deno, so this replaces it's invocations in otel-js with a call to fetch
 import "https://cdn.deno.land/sendbeacon_polyfill/versions/0.0.1/raw/index.js";
+applyOtherShimsToMakeOtelForBrowserWorkForDeno();
+
+function applyOtherShimsToMakeOtelForBrowserWorkForDeno(): void {
+  if (!globalThis.document) {
+    globalThis.document = {
+      createElement: function () { //For this line - https://github.com/open-telemetry/opentelemetry-js/blob/bdb61f7e56b7fbe7d281262e69e5bc8683a52014/packages/opentelemetry-sdk-trace-web/src/utils.ts#L33
+        return {
+          protocol: ":", //For this line - https://github.com/open-telemetry/opentelemetry-js/blob/main/experimental/packages/opentelemetry-instrumentation-xml-http-request/src/xhr.ts#L170
+        };
+      },
+    };
+  }
+
+  if (!performance.clearResourceTimings) {
+    performance.clearResourceTimings = function () {}; //For this line - https://github.com/open-telemetry/opentelemetry-js/blob/main/experimental/packages/opentelemetry-instrumentation-fetch/src/fetch.ts#L181 and this Deno Deploy bug - https://github.com/denoland/deno/issues/13605
+  }
+}
 
 import { ITracingData } from "./sender.ts";
 
 async function createSpansAndExportThem(tracingData: ITracingData) {
-  //Hacks - start
-  globalThis.document = {
-    createElement: function () { //For this line - https://github.com/open-telemetry/opentelemetry-js/blob/bdb61f7e56b7fbe7d281262e69e5bc8683a52014/packages/opentelemetry-sdk-trace-web/src/utils.ts#L33
-      return {
-        protocol: ":", //For this line - https://github.com/open-telemetry/opentelemetry-js/blob/main/experimental/packages/opentelemetry-instrumentation-xml-http-request/src/xhr.ts#L170
-      };
-    },
-  };
-  //globalThis.location = {}; //For this line - https://github.com/open-telemetry/opentelemetry-js/blob/main/packages/opentelemetry-sdk-trace-web/src/utils.ts#L424
-  console.log("What is the value of globalThis.location?");
-  console.log(globalThis.location);
-
-  performance.clearResourceTimings = function () {}; //For this line and Deno Deploy bug - https://github.com/open-telemetry/opentelemetry-js/blob/main/experimental/packages/opentelemetry-instrumentation-fetch/src/fetch.ts#L181
-  //Hacks - end
-
   const provider = new WebTracerProvider();
 
   // Note: For production consider using the "BatchSpanProcessor" to reduce the number of requests
