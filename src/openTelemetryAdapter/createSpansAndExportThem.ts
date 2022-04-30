@@ -8,7 +8,7 @@ import {
   ConsoleSpanExporter,
   SimpleSpanProcessor,
 } from "https://cdn.skypack.dev/@opentelemetry/sdk-trace-base?dts";
-import { OTLPTraceExporter } from "https://cdn.skypack.dev/@opentelemetry/exporter-trace-otlp-http@0.27.0";
+import { OTLPTraceExporter } from "https://cdn.skypack.dev/@opentelemetry/exporter-trace-otlp-http@0.27.0"; //v0.28.0 doesn't work as of this writing because the new @opentelemetry/otlp-exporter-base dependency that was very recently factored out doesn't exist in Skypack yet (may need to write up an issue somehwere if it never does)
 import { WebTracerProvider } from "https://cdn.skypack.dev/@opentelemetry/sdk-trace-web?dts";
 
 import "./setupShimsToMakeOtelForBrowserWorkForDeno.ts"; //has side effects
