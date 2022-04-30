@@ -1,4 +1,8 @@
-import { context, trace } from "https://cdn.skypack.dev/@opentelemetry/api?dts";
+import {
+  context,
+  trace,
+  Tracer,
+} from "https://cdn.skypack.dev/@opentelemetry/api?dts";
 import {
   ConsoleSpanExporter,
   SimpleSpanProcessor,
@@ -8,7 +12,7 @@ import { WebTracerProvider } from "https://cdn.skypack.dev/@opentelemetry/sdk-tr
 
 import "./setupShimsToMakeOtelForBrowserWorkForDeno.ts"; //has side effects
 
-import { ITracingData } from "./sender.ts";
+import { ISpanData, ITracingData } from "./sender.ts";
 
 async function createSpansAndExportThem(tracingData: ITracingData) {
   const provider = new WebTracerProvider();
@@ -38,9 +42,23 @@ async function createSpansAndExportThem(tracingData: ITracingData) {
     return;
   }
 
-  createSpans(rootConstructedId);
+  const { recursivelyCreateSpans } = createSpanCreator({
+    tracer,
+    spanDataByConstructedId,
+  });
 
-  function createSpans(constructedId: string, ctx = undefined) {
+  recursivelyCreateSpans(rootConstructedId);
+
+  await provider.forceFlush();
+}
+
+function createSpanCreator(
+  { tracer, spanDataByConstructedId }: {
+    tracer: Tracer;
+    spanDataByConstructedId: Map<string, ISpanData>;
+  },
+) {
+  function recursivelyCreateSpans(constructedId: string, ctx = undefined) {
     const spanRawData = spanDataByConstructedId.get(constructedId);
     if (!spanRawData) {
       //TODO - throw instead of returning, since this should never happen unless something's busted upstream
@@ -70,35 +88,15 @@ async function createSpansAndExportThem(tracingData: ITracingData) {
 
     childConstructedIds.forEach((childConstructedId: string) => {
       const newActiveCtx = trace.setSpan(context.active(), span);
-      createSpans(childConstructedId, newActiveCtx);
+      recursivelyCreateSpans(childConstructedId, newActiveCtx);
     });
 
     span.end(endTime);
   }
 
-  // const parentSpan = tracer.startSpan("main");
-  // for (let i = 0; i < 10; i += 1) {
-  //   const ctx = trace.setSpan(context.active(), parentSpan);
-  //   const span = tracer.startSpan("doWork", undefined, ctx);
-
-  //   // simulate some random work.
-  //   for (let i = 0; i <= Math.floor(Math.random() * 40000000); i += 1) {
-  //     // empty
-  //   }
-
-  //   // Set attributes to the span.
-  //   span.setAttribute("key", "value");
-
-  //   // Annotate our span to capture metadata about our operation
-  //   span.addEvent("invoking doWork");
-
-  //   span.end();
-  // }
-  // // Be sure to end the span.
-  // parentSpan.end();
-
-  // flush and close the connection.
-  await provider.forceFlush();
+  return {
+    recursivelyCreateSpans,
+  };
 }
 
 //TODO - turn the below into a manual test harness
