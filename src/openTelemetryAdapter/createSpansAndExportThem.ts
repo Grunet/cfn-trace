@@ -19,7 +19,7 @@ async function createSpansAndExportThem(tracingData: ITracingData) {
   const provider = new WebTracerProvider();
 
   //TODO - do what's needed with this
-  const collectorOptions = {
+  const _collectorOptions = {
     url: "http://localhost:4318/", // url is optional and can be omitted - default is http://localhost:4318/v1/traces
     headers: {}, // an optional object containing custom headers to be sent with each request
     concurrencyLimit: 10, // an optional limit on pending requests
