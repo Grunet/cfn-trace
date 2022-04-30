@@ -4,6 +4,7 @@ import {
 import {
   transformStackEventDataIntoTracingData,
 } from "./transformer/transform.ts"; //Only depend on the function signature/interface/types here
+import { ITelemetrySender } from "./openTelemetryAdapter/sender.ts";
 
 interface IInputs {
   cliArgs: IExpectedCliArgs;
@@ -11,6 +12,7 @@ interface IInputs {
   cloudformationClientAdapter: ICloudformationClientAdapter;
   transformStackEventDataIntoTracingData:
     typeof transformStackEventDataIntoTracingData;
+  telemetrySender: ITelemetrySender;
   logger: ILogger;
 }
 
@@ -29,11 +31,12 @@ interface ILogger {
 
 async function invoke(
   {
-    cliArgs,
-    logger,
+    cliArgs, //TODO - validate this input with zod, iots, etc...
     versionData,
     cloudformationClientAdapter,
     transformStackEventDataIntoTracingData,
+    telemetrySender,
+    logger,
   }: IInputs,
 ) {
   if (cliArgs["version"] === true) {
@@ -41,19 +44,14 @@ async function invoke(
   }
 
   if (cliArgs["stack-name"]) {
-    const { spanDataByConstructedId } =
-      await transformStackEventDataIntoTracingData({
-        stackName: cliArgs["stack-name"],
-        dependencies: {
-          cloudformationClientAdapter,
-        },
-      });
+    const tracingData = await transformStackEventDataIntoTracingData({
+      stackName: cliArgs["stack-name"],
+      dependencies: {
+        cloudformationClientAdapter,
+      },
+    });
 
-    //TODO - remove/adapt this later
-    for (const [key, value] of spanDataByConstructedId) {
-      console.log(key);
-      console.log(value);
-    }
+    await telemetrySender.sendTracingData(tracingData);
   }
 }
 

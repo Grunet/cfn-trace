@@ -28,4 +28,5 @@ function createTelemetrySender(): ITelemetrySender {
 }
 
 export { createTelemetrySender };
+export type { ITelemetrySender };
 export type { ISpanData, ITracingData };
