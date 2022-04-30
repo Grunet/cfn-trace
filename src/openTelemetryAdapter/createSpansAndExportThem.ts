@@ -75,17 +75,16 @@ function createSpanCreator(
       return;
     }
 
-    const startTime = [
+    const startTime: [number, number] = [
       startInstant.getTime() / Math.pow(10, 3), //seconds
       0, //additional nanoseconds
     ];
 
-    const endTime = [
+    const endTime: [number, number] = [
       endInstant.getTime() / Math.pow(10, 3), //seconds
       0, //additional nanoseconds
     ];
 
-    //TODO - get TS to stop complaining about the potential type widening after startTime and endTime are declared above (e.g. if in theory their array lengths were changed before this)
     const span = tracer.startSpan(name, { startTime }, ctx);
 
     const { childSpanIds: childConstructedIds } = spanRawData;
