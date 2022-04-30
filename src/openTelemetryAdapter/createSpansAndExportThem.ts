@@ -5,9 +5,6 @@ import {
 } from "https://cdn.skypack.dev/@opentelemetry/sdk-trace-base?dts";
 import { OTLPTraceExporter } from "https://cdn.skypack.dev/@opentelemetry/exporter-trace-otlp-http@0.27.0";
 import { WebTracerProvider } from "https://cdn.skypack.dev/@opentelemetry/sdk-trace-web?dts";
-//TODO - determine if these 2 imports can be removed for this case
-// import { ZoneContextManager } from "https://cdn.skypack.dev/@opentelemetry/context-zone?dts";
-// import { B3Propagator } from "https://cdn.skypack.dev/@opentelemetry/propagator-b3?dts";
 
 //navigator.sendBeacon doesn't exist in Deno, so this replaces it's invocations in otel-js with a call to fetch
 import "https://cdn.deno.land/sendbeacon_polyfill/versions/0.0.1/raw/index.js";
@@ -34,6 +31,7 @@ import { ITracingData } from "./sender.ts";
 async function createSpansAndExportThem(tracingData: ITracingData) {
   const provider = new WebTracerProvider();
 
+  //TODO - consider this
   // Note: For production consider using the "BatchSpanProcessor" to reduce the number of requests
   // to your exporter. Using the SimpleSpanProcessor here as it sends the spans immediately to the
   // exporter without delay
@@ -48,11 +46,6 @@ async function createSpansAndExportThem(tracingData: ITracingData) {
   provider.addSpanProcessor(
     new SimpleSpanProcessor(new OTLPTraceExporter()),
   );
-  //TODO - see above comment about this
-  //   provider.register({
-  //     contextManager: new ZoneContextManager(),
-  //     propagator: new B3Propagator(),
-  //   });
   provider.register();
 
   const tracer = provider.getTracer("tracer-deno");
