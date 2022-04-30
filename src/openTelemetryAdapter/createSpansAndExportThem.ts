@@ -39,8 +39,9 @@ async function createSpansAndExportThem(tracingData: ITracingData) {
 
   const { spanDataByConstructedId, rootConstructedId } = tracingData;
   if (!rootConstructedId) {
-    //TODO - throw instead of returning, since this should never happen unless something's busted upstream
-    return;
+    throw new Error(
+      `rootConstructedId was unexpectedly falsy: ${rootConstructedId}`,
+    );
   }
 
   const { recursivelyCreateSpans } = createSpanCreator({
@@ -65,14 +66,28 @@ function createSpanCreator(
   ) {
     const spanRawData = spanDataByConstructedId.get(constructedId);
     if (!spanRawData) {
-      //TODO - throw instead of returning, since this should never happen unless something's busted upstream
-      return;
+      throw new Error(
+        `spanRawData was unexpectedly falsy: ${spanRawData}`,
+      );
     }
 
     const { name, startInstant, endInstant } = spanRawData;
-    if (!name || !startInstant || !endInstant) {
-      //TODO - throw instead of returning, since this should never happen unless something's busted upstream
-      return;
+    if (!name) {
+      throw new Error(
+        `name was unexpectedly falsy: ${name}`,
+      );
+    }
+
+    if (!startInstant) {
+      throw new Error(
+        `startInstant was unexpectedly falsy: ${startInstant}`,
+      );
+    }
+
+    if (!endInstant) {
+      throw new Error(
+        `endInstant was unexpectedly falsy: ${endInstant}`,
+      );
     }
 
     const startTime = convertInstantToOtelTimeInput(startInstant);
