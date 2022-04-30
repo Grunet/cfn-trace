@@ -18,17 +18,17 @@ import { ISpanData, ITracingData } from "./sender.ts";
 async function createSpansAndExportThem(tracingData: ITracingData) {
   const provider = new WebTracerProvider();
 
-  //TODO - do what's needed with this
-  const _collectorOptions = {
-    url: "http://localhost:4318/", // url is optional and can be omitted - default is http://localhost:4318/v1/traces
+  //BatchSpanProcessor may be a better fit if cases come up with a large number of spans
+  provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()));
+
+  //These settings were copied/adjusted from here - https://github.com/open-telemetry/opentelemetry-js/tree/main/experimental/packages/exporter-trace-otlp-http#traces-in-web
+  const collectorOptions = {
+    url: "http://localhost:4318/v1/traces", // url is optional and can be omitted, BUT Skypack's bundling is currently doing something very odd and setting the default to the old value of http://localhost:55681/v1/traces (if you go to definition on OTLPTraceExporter you'll see this), so the new default port of 4318 has to be explicitly used here to workaround this
     headers: {}, // an optional object containing custom headers to be sent with each request
     concurrencyLimit: 10, // an optional limit on pending requests
   };
-
-  //BatchSpanProcessor may be a better fit if cases come up with a large number of spans
-  provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()));
   provider.addSpanProcessor(
-    new SimpleSpanProcessor(new OTLPTraceExporter()),
+    new SimpleSpanProcessor(new OTLPTraceExporter(collectorOptions)), //TODO - figure out if TS's complaints are justified here
   );
   provider.register();
 
