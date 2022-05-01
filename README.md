@@ -18,7 +18,7 @@ Captures Cloudformation nested stack deploy events as traces
 
 ### Setup a Local OpenTelemetry Collector
 
-### Try it Out Using a Local AWS API Key and Secret
+### Try it Out Using a Local AWS Access Key and Secret
 
 ## CLI Reference
 
