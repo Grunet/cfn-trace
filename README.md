@@ -22,6 +22,11 @@ Captures Cloudformation nested stack deploy events as traces
 
 ## CLI Reference
 
+There isn't a ```--help``` argument yet, but here is a short list of the arguments that are available
+
+- ```--version``` - this will echo the version of the binary to the console
+- ```--stack-name``` - set this to the name of a root Cloudformation stack to generate a trace from it's most recent deploy
+
 ## Validating the Binaries Haven't Been Compromised Since They Were Published
 
 ## Why is a Collector Needed In the First Place?
