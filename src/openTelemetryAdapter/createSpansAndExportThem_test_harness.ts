@@ -1,9 +1,5 @@
 //A manual test harness
 //Based on the expected outputs from transform_test.ts
-//Run from the project root using
-//```
-//deno run --no-check --location https://www.example.com --allow-net ./src/openTelemetryAdapter/createSpansAndExportThem_test_harness.ts
-//```
 
 import { createSpansAndExportThem } from "./createSpansAndExportThem.ts";
 import { ISpanData, ITracingData } from "./sender.ts";

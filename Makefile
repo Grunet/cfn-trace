@@ -39,7 +39,12 @@ lintTemplates:
 	cfn-lint ./examples/**/*
 deployStack:
 	mkdir -p ./tmp/
-#The S3 bucket referenced here was created manually
+#   The S3 bucket referenced here was created manually
 	aws cloudformation package --template-file ./examples/${dir}/root.yaml --s3-bucket examples-templates --s3-prefix ${dir} --output-template-file ./tmp/${dir}.template
 	aws cloudformation deploy --template-file ./tmp/${dir}.template --stack-name ${dir}
 	rm -rf ./tmp/
+#OpenTelemetry-related commands
+startCollector:
+	cd ./src/openTelemetryAdapter/local-collector && docker compose up
+runCreateSpansAndExportThemTestHarness:
+	deno run --no-check --location https://www.example.com --allow-net ./src/openTelemetryAdapter/createSpansAndExportThem_test_harness.ts
