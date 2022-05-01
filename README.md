@@ -16,7 +16,7 @@ on.
 ### Download the Zip And Extract the Binary
 
 Use one of the following sets of commands, depending on your operating system.
-Alternatively you can download the zips directly from
+Alternatively you can download the zip directly from
 [the releases page](https://github.com/Grunet/cfn-trace/releases).
 
 #### Linux
