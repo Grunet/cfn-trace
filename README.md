@@ -53,6 +53,50 @@ TODO
 
 ### Setup a Local OpenTelemetry Collector
 
+If you use Docker, the following should get you setup. Otherwise check out
+[its official docs](https://opentelemetry.io/docs/collector/getting-started/)
+for alternative approaches.
+
+Create a docker-compose.yaml file as follows
+
+```
+version: "3.9"
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector
+    volumes:
+      - ./config.yaml:/etc/otelcol/config.yaml
+    ports:
+      - "4318:4318"
+```
+
+And then in the same directory, create a config.yaml file as follows to override
+the default the image comes with
+
+```
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+exporters:
+  logging:
+    loglevel: debug
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging]
+```
+
+Then to start the collector run `docker compose up` from this directory.
+
 ### Try it Out Using a Local AWS Access Key and Secret
 
 ## CLI Reference
