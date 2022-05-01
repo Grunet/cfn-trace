@@ -13,15 +13,39 @@ call
 [the DescribeStackEvents API](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_DescribeStackEvents.html)
 on.
 
-### Download the Zip And Unpack the Binary
+### Download the Zip And Extract the Binary
+
+Use one of the following sets of commands, depending on your operating system.
+Alternatively you can download the zips directly from
+[the releases page](https://github.com/Grunet/cfn-trace/releases).
 
 #### Linux
 
+```
+wget https://github.com/Grunet/cfn-trace/releases/latest/download/cfn-trace-x86_64-unknown-linux-gnu.zip
+unzip cfn-trace-x86_64-unknown-linux-gnu.zip
+rm cfn-trace-x86_64-unknown-linux-gnu.zip
+```
+
+Leaves a binary named `cfn-trace` in the current working directory.
+
 #### Windows
+
+```
+TODO
+```
 
 #### MacOS (with Intel chip)
 
+```
+TODO
+```
+
 #### MacOS (with Apple chip)
+
+```
+TODO
+```
 
 ### Setup a Local OpenTelemetry Collector
 
