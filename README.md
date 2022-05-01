@@ -22,14 +22,30 @@ Captures Cloudformation nested stack deploy events as traces
 
 ## CLI Reference
 
-There isn't a ```--help``` argument yet, but here is a short list of the arguments that are available
+There isn't a `--help` argument yet, but here is a short list of the arguments
+that are available
 
-- ```--version``` - this will echo the version of the binary to the console
-- ```--stack-name``` - set this to the name of a root Cloudformation stack to generate a trace from it's most recent deploy
+- `--version` - this will echo the version of the binary to the console
+- `--stack-name` - set this to the name of a root Cloudformation stack to
+  generate a trace from it's most recent deploy
+
+And for the moment, the only way to pass AWS credentials and the region for the
+binary to use is via environment variables, specifically
+
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- AWS_DEFAULT_REGION
+
+You can find their definitions in
+[this AWS doc](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html).
 
 ## Validating the Binaries Haven't Been Compromised Since They Were Published
 
+TODO
+
 ## Why is a Collector Needed In the First Place?
+
+TODO
 
 ## Contributing
 
