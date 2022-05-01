@@ -19,7 +19,7 @@ async function createSpansAndExportThem(tracingData: ITracingData) {
   const provider = new WebTracerProvider();
 
   //BatchSpanProcessor may be a better fit if cases come up with a large number of spans
-  provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter()));
+  // provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter())); //TODO - put this behind some sort of "debug" flag
 
   //These settings were copied/adjusted from here - https://github.com/open-telemetry/opentelemetry-js/tree/main/experimental/packages/exporter-trace-otlp-http#traces-in-web
   const collectorOptions = {
