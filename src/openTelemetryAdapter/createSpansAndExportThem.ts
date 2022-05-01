@@ -7,6 +7,7 @@ import {
 import {
   // ConsoleSpanExporter,
   SimpleSpanProcessor,
+  SpanExporter,
 } from "https://cdn.skypack.dev/@opentelemetry/sdk-trace-base@v1.2.0?dts";
 import { OTLPTraceExporter } from "https://cdn.skypack.dev/@opentelemetry/exporter-trace-otlp-http@v0.27.0"; //v0.28.0 doesn't work as of this writing because the new @opentelemetry/otlp-exporter-base dependency that was very recently factored out doesn't exist in Skypack yet (may need to write up an issue somehwere if it never does)
 import { WebTracerProvider } from "https://cdn.skypack.dev/@opentelemetry/sdk-trace-web@v1.2.0?dts";
@@ -27,7 +28,9 @@ async function createSpansAndExportThem(tracingData: ITracingData) {
     //"headers" cannot be included here as of this writing because the otel sdk will need to switch to using XmlHttpRequest instead of navigator.sendBeacon for that
   };
   provider.addSpanProcessor(
-    new SimpleSpanProcessor(new OTLPTraceExporter(collectorOptions)), //TODO - figure out if TS's complaints are justified here
+    new SimpleSpanProcessor(
+      new OTLPTraceExporter(collectorOptions) as unknown as SpanExporter, //Skypack's bundling for OTLPTraceExporter uses prototypal inheritance in a way that TS can't understand (and so misses methods it has) as you can see by going to definition on it, hence this explicit type casting to get rid of the red squiggle
+    ),
   );
   provider.register();
 
