@@ -31,6 +31,8 @@ Leaves a binary named `cfn-trace` in the current working directory.
 
 #### Windows
 
+##### Powershell
+
 ```
 Invoke-WebRequest https://github.com/Grunet/cfn-trace/releases/latest/download/cfn-trace-x86_64-pc-windows-msvc.zip -OutFile ./cfn-trace-x86_64-pc-windows-msvc.zip
 Expand-Archive -LiteralPath .\cfn-trace-x86_64-pc-windows-msvc.zip -DestinationPath .\
@@ -95,11 +97,25 @@ service:
       exporters: [logging]
 ```
 
-Then to start the collector run `docker compose up` from this directory.
+Then start the collector by running `docker compose up` from this directory.
+
+### Setup AWS Environment Variables
+
+For the moment, the only way to pass AWS credentials and the region for the
+binary to use is via environment variables, specifically
+
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- AWS_DEFAULT_REGION
+
+You can find their definitions in
+[this AWS doc](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html).
+
+In a new shell, setup these environment variables
 
 ### Try it Out Using a Local AWS Access Key and Secret
 
-TODO
+With the collector running in one shell, open up another
 
 #### How to Export to a Vendor?
 
@@ -113,18 +129,6 @@ that are available
 - `--version` - this will echo the version of the binary to the console
 - `--stack-name` - set this to the name of a root Cloudformation stack to
   generate a trace from it's most recent deploy
-
-### Required Environment Variables
-
-For the moment, the only way to pass AWS credentials and the region for the
-binary to use is via environment variables, specifically
-
-- AWS_ACCESS_KEY_ID
-- AWS_SECRET_ACCESS_KEY
-- AWS_DEFAULT_REGION
-
-You can find their definitions in
-[this AWS doc](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html).
 
 ## Validating the Binaries Haven't Been Compromised Since They Were Published
 
