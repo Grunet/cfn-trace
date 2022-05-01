@@ -114,7 +114,9 @@ that are available
 - `--stack-name` - set this to the name of a root Cloudformation stack to
   generate a trace from it's most recent deploy
 
-And for the moment, the only way to pass AWS credentials and the region for the
+### Required Environment Variables
+
+For the moment, the only way to pass AWS credentials and the region for the
 binary to use is via environment variables, specifically
 
 - AWS_ACCESS_KEY_ID
