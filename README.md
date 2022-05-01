@@ -102,16 +102,30 @@ Then start the collector by running `docker compose up` from this directory.
 ### Setup AWS Environment Variables
 
 For the moment, the only way to pass AWS credentials and the region for the
-binary to use is via environment variables, specifically
+binary to use is via environment variables.
 
-- AWS_ACCESS_KEY_ID
-- AWS_SECRET_ACCESS_KEY
-- AWS_DEFAULT_REGION
+In a new shell (i.e. not the one the collector is running from), setup the
+following environment variables (defined in
+[this AWS doc](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html)),
+after replacing the dummy values with your own.
 
-You can find their definitions in
-[this AWS doc](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html).
+#### Linux or MacOS
 
-In a new shell, setup these environment variables
+```
+export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+export AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+export AWS_DEFAULT_REGION=us-west-2
+```
+
+#### Windows
+
+##### Powershell
+
+```
+$Env:AWS_ACCESS_KEY_ID="AKIAIOSFODNN7EXAMPLE"
+$Env:AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+$Env:AWS_DEFAULT_REGION="us-west-2"
+```
 
 ### Try it Out Using a Local AWS Access Key and Secret
 
