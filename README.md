@@ -18,10 +18,12 @@ Captures Cloudformation nested stack deploy events as traces
 
 ### Setup a Local OpenTelemetry Collector
 
+### Try it Out Using a Local AWS API Key and Secret
+
 ## CLI Reference
 
-## Why is a Collector Needed?
-
 ## Validating the Binaries Haven't Been Compromised Since They Were Published
+
+## Why is a Collector Needed In the First Place?
 
 ## Contributing
