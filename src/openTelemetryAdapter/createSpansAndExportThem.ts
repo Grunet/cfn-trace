@@ -5,7 +5,7 @@ import {
   Tracer,
 } from "https://cdn.skypack.dev/@opentelemetry/api@v1.1.0?dts";
 import {
-  ConsoleSpanExporter,
+  // ConsoleSpanExporter,
   SimpleSpanProcessor,
 } from "https://cdn.skypack.dev/@opentelemetry/sdk-trace-base@v1.2.0?dts";
 import { OTLPTraceExporter } from "https://cdn.skypack.dev/@opentelemetry/exporter-trace-otlp-http@v0.27.0"; //v0.28.0 doesn't work as of this writing because the new @opentelemetry/otlp-exporter-base dependency that was very recently factored out doesn't exist in Skypack yet (may need to write up an issue somehwere if it never does)
