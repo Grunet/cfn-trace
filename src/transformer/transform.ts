@@ -2,6 +2,7 @@ import {
   IAdaptedStackEvent,
   ICloudformationClientAdapter,
 } from "../cloudformationClientAdapter/client.ts";
+import { ISpanData, ITracingData } from "../openTelemetryAdapter/sender.ts";
 
 interface IInputs {
   stackName: string;
@@ -12,18 +13,6 @@ interface IDependencies {
   cloudformationClientAdapter: ICloudformationClientAdapter;
 }
 
-interface ITracingData {
-  spanDataByConstructedId: Map<string, ISpanData>;
-}
-
-interface ISpanData {
-  childSpanIds: Set<string>;
-  //TS isn't aware of the structure the stackEvents array SHOULD have, so it needs this to be extra cautious about these pieces of data maybe never existing
-  name?: string;
-  startInstant?: Date;
-  endInstant?: Date;
-}
-
 async function transformStackEventDataIntoTracingData(
   inputs: IInputs,
 ): Promise<ITracingData> {
@@ -31,17 +20,18 @@ async function transformStackEventDataIntoTracingData(
 
   const spanDataByConstructedId = new Map<string, ISpanData>();
 
-  //Mutates spanDataByConstructedId
-  await __transformStackEventDataIntoTracingData({
-    stackName,
-    cloudformationClientAdapter,
-    spanDataByConstructedId,
-    stackResourceIdFromWithinParentStack: stackName, //This isn't quite logically correct for the root stack, but it works out (see comment below)
-    createSpanForStack: true,
-  });
+  const { constructedIdForTheCurrentStack: rootConstructedId } =
+    await __transformStackEventDataIntoTracingData({
+      stackName,
+      cloudformationClientAdapter,
+      spanDataByConstructedId, //This will mutate/populate spanDataByConstructedId
+      stackResourceIdFromWithinParentStack: stackName, //This isn't quite logically correct for the root stack, but it works out (see comment below)
+      createSpanForStack: true,
+    });
 
   return {
     spanDataByConstructedId,
+    rootConstructedId,
   };
 }
 
@@ -61,7 +51,9 @@ async function __transformStackEventDataIntoTracingData({
   spanDataByConstructedId,
   stackResourceIdFromWithinParentStack,
   createSpanForStack,
-}: IPrivateRecursiveInputs) {
+}: IPrivateRecursiveInputs): Promise<
+  { constructedIdForTheCurrentStack: string | undefined }
+> {
   const currentStackName = stackName;
 
   const { stackEvents } = await cloudformationClientAdapter
@@ -69,9 +61,15 @@ async function __transformStackEventDataIntoTracingData({
       stackName: currentStackName,
     });
 
-  const { getStackArn, lookForStackArn } = createStackArnFinder({
-    currentStackName,
-  });
+  const { getCurrentStackArn, lookForCurrentStackArn } =
+    createCurrentStackArnFinder({
+      currentStackName,
+    });
+
+  const { getCurrentStackConstructedId, lookForCurrentStackConstructedId } =
+    createCurrentStackConstructedIdFinder({
+      currentStackName,
+    });
 
   const { setChildSpanIdsForStack, lookForAnyChildSpan } =
     createChildSpanIdGatherer({
@@ -97,26 +95,29 @@ async function __transformStackEventDataIntoTracingData({
       resourceType,
     } = stackEvent;
 
-    lookForStackArn(stackEvent);
+    const constructedIdForTheResource = constructId({
+      resourceIdPerCloudformation,
+      resourceIdPerTheServiceItsFrom,
+      resourceType,
+    });
+
+    lookForCurrentStackArn(stackEvent);
+
+    lookForCurrentStackConstructedId({
+      stackEvent,
+      constructedIdForTheResource,
+    });
 
     lookForAStackResource(stackEvent);
 
     lookForAnyChildSpan({
       stackEvent,
-      constructedIdForTheResource: constructId({
-        resourceIdPerCloudformation,
-        resourceIdPerTheServiceItsFrom,
-        resourceType,
-      }),
+      constructedIdForTheResource,
     });
 
     createOrUpdateSpanData({
       stackEvent,
-      constructedIdForTheResource: constructId({
-        resourceIdPerCloudformation,
-        resourceIdPerTheServiceItsFrom,
-        resourceType,
-      }),
+      constructedIdForTheResource,
       spanDataByConstructedId,
     });
   }
@@ -124,7 +125,7 @@ async function __transformStackEventDataIntoTracingData({
   setChildSpanIdsForStack({
     constructedIdOfCurrentStack: constructId({
       resourceIdPerCloudformation: stackResourceIdFromWithinParentStack,
-      resourceIdPerTheServiceItsFrom: getStackArn() ?? "",
+      resourceIdPerTheServiceItsFrom: getCurrentStackArn() ?? "",
       resourceType: "AWS::CloudFormation::Stack",
     }),
     spanDataByConstructedId,
@@ -145,18 +146,22 @@ async function __transformStackEventDataIntoTracingData({
       createSpanForStack: false,
     });
   }
+
+  return {
+    constructedIdForTheCurrentStack: getCurrentStackConstructedId(),
+  };
 }
 
-function createStackArnFinder(
+function createCurrentStackArnFinder(
   { currentStackName }: { currentStackName: string },
 ) {
   let stackArn: string | undefined;
 
   return {
-    getStackArn() {
+    getCurrentStackArn() {
       return stackArn;
     },
-    lookForStackArn(
+    lookForCurrentStackArn(
       { resourceIdPerCloudformation, resourceIdPerTheServiceItsFrom }:
         IAdaptedStackEvent,
     ) {
@@ -167,6 +172,33 @@ function createStackArnFinder(
       if (resourceIdPerTheServiceItsFrom) {
         stackArn = resourceIdPerTheServiceItsFrom;
       }
+    },
+  };
+}
+
+function createCurrentStackConstructedIdFinder(
+  { currentStackName }: { currentStackName: string },
+) {
+  let stackConstructedId: string | undefined;
+
+  return {
+    getCurrentStackConstructedId() {
+      return stackConstructedId;
+    },
+    lookForCurrentStackConstructedId(
+      {
+        stackEvent: { resourceIdPerCloudformation },
+        constructedIdForTheResource,
+      }: {
+        stackEvent: IAdaptedStackEvent;
+        constructedIdForTheResource: string;
+      },
+    ) {
+      if (resourceIdPerCloudformation !== currentStackName) {
+        return;
+      }
+
+      stackConstructedId = constructedIdForTheResource;
     },
   };
 }
