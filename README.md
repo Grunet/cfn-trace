@@ -35,3 +35,7 @@ above link and create a (free) Gitpod account using your Github credentials.
 This will open a workspace in your browser that should have all of the necessary
 tools ready to go (you can do the same from a fork if you're working on a PR,
 just use your fork's repository in the URL instead of this one's.)
+
+FYI there are no commit hooks or CI commands currently that will save and
+re-commit any changes made by the code auto-formatter, so you may have to run
+`make format` before you finish a PR to make up for this.
