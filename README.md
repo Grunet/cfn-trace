@@ -157,8 +157,8 @@ what tweaks are needed to send the data to them).
 
 ## CLI Reference
 
-There isn't a `--help` argument yet, but here is a short list of the arguments
-that are available
+There isn't a `--help` argument yet, but here is a list of the arguments that
+are available
 
 - `--version` - this will echo the version of the binary to the console
 - `--stack-name` - set this to the name of a root Cloudformation stack to
