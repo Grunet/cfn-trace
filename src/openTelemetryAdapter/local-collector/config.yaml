@@ -1,0 +1,28 @@
+#Adapted from page 19 of https://www.honeycomb.io/wp-content/uploads/2022/03/Front-end-Observability-Whitepaper-1.pdf
+
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+exporters:
+  logging:
+    loglevel: debug
+
+  # otlp/honeycomb:
+  #   endpoint: "api.honeycomb.io:443"
+  #   headers:
+  #     "x-honeycomb-team": "YOUR_API_KEY"
+  #     "x-honeycomb-dataset": "YOUR_DATASET"
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging]
+      # exporters: [logging, otlp/honeycomb]

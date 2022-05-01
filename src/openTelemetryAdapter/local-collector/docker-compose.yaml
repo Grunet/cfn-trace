@@ -1,0 +1,6 @@
+version: "3.9"
+services:
+  otel-collector:
+    build: .
+    ports:
+      - "4318:4318"
