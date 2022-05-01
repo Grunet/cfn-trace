@@ -127,9 +127,25 @@ $Env:AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 $Env:AWS_DEFAULT_REGION="us-west-2"
 ```
 
-### Try it Out Using a Local AWS Access Key and Secret
+### Try Generating Trace Data
 
-With the collector running in one shell, open up another
+In this new shell with the AWS environment variables present, run the following
+command, after replacing the dummy value with your own.
+
+Afterwards, you should see the collector output raw trace/span information into
+its shell's console.
+
+#### Linux or MacOS
+
+```
+./cfn-trace --stack-name <your root stack's name>
+```
+
+#### Windows
+
+```
+.\cfn-trace.exe --stack-name <your root stack's name>
+```
 
 #### How to Export to a Vendor?
 
