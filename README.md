@@ -99,6 +99,12 @@ Then to start the collector run `docker compose up` from this directory.
 
 ### Try it Out Using a Local AWS Access Key and Secret
 
+TODO
+
+#### How to Export to a Vendor?
+
+TODO
+
 ## CLI Reference
 
 There isn't a `--help` argument yet, but here is a short list of the arguments
