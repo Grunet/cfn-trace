@@ -32,8 +32,12 @@ Leaves a binary named `cfn-trace` in the current working directory.
 #### Windows
 
 ```
-TODO
+Invoke-WebRequest https://github.com/Grunet/cfn-trace/releases/latest/download/cfn-trace-x86_64-pc-windows-msvc.zip -OutFile ./cfn-trace-x86_64-pc-windows-msvc.zip
+Expand-Archive -LiteralPath .\cfn-trace-x86_64-pc-windows-msvc.zip -DestinationPath .\
+rm .\cfn-trace-x86_64-pc-windows-msvc.zip
 ```
+
+Leaves an executable named `cfn-trace.exe` in the current working directory.
 
 #### MacOS (with Intel chip)
 
