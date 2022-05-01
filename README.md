@@ -149,7 +149,11 @@ its shell's console.
 
 #### How to Export to a Vendor?
 
-TODO
+The details will vary from vendor to vendor, but in general this should only
+require tweaking the config.yaml file to include a vendor-specific exporter
+(e.g. for Honeycomb, you can see on page 19 of
+[this doc](https://www.honeycomb.io/wp-content/uploads/2022/03/Front-end-Observability-Whitepaper-1.pdf)
+what tweaks are needed to send the data to them).
 
 ## CLI Reference
 
