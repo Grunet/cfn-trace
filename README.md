@@ -77,7 +77,7 @@ directory.
 version: "3.9"
 services:
   otel-collector:
-    image: otel/opentelemetry-collector
+    image: otel/opentelemetry-collector:0.50.0 # The specific version here is unimportant, as long as some tag is specified (otherwise the volume mount won't work)
     volumes:
       - ./config.yaml:/etc/otelcol/config.yaml
     ports:
