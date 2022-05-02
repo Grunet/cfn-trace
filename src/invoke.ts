@@ -9,7 +9,7 @@ import { ITelemetrySender } from "./openTelemetryAdapter/sender.ts";
 interface IInputs {
   cliArgs: IExpectedCliArgs;
   versionData: IVersionData;
-  cloudformationClientAdapter: ICloudformationClientAdapter;
+  cloudformationClientAdapterFactory: () => ICloudformationClientAdapter;
   transformStackEventDataIntoTracingData:
     typeof transformStackEventDataIntoTracingData;
   telemetrySender: ITelemetrySender;
@@ -33,7 +33,7 @@ async function invoke(
   {
     cliArgs, //TODO - validate this input with zod, iots, etc...
     versionData,
-    cloudformationClientAdapter,
+    cloudformationClientAdapterFactory,
     transformStackEventDataIntoTracingData,
     telemetrySender,
     logger,
@@ -47,7 +47,7 @@ async function invoke(
     const tracingData = await transformStackEventDataIntoTracingData({
       stackName: cliArgs["stack-name"],
       dependencies: {
-        cloudformationClientAdapter,
+        cloudformationClientAdapter: cloudformationClientAdapterFactory(),
       },
     });
 
