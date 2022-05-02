@@ -44,11 +44,11 @@ Deno.test("Passing --version logs the version to the console", async () => {
         rootConstructedId: "",
       });
     },
-    telemetrySender: {
+    telemetrySenderFactory: () => ({
       sendTracingData() {
         return Promise.resolve();
       },
-    },
+    }),
     logger: mockLogger,
   });
 

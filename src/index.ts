@@ -23,6 +23,8 @@ await invoke({
     });
   },
   transformStackEventDataIntoTracingData,
-  telemetrySender: createTelemetrySender(),
+  telemetrySenderFactory: () => {
+    return createTelemetrySender();
+  },
   logger: console,
 });

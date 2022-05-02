@@ -12,7 +12,7 @@ interface IInputs {
   cloudformationClientAdapterFactory: () => ICloudformationClientAdapter;
   transformStackEventDataIntoTracingData:
     typeof transformStackEventDataIntoTracingData;
-  telemetrySender: ITelemetrySender;
+  telemetrySenderFactory: () => ITelemetrySender;
   logger: ILogger;
 }
 
@@ -35,7 +35,7 @@ async function invoke(
     versionData,
     cloudformationClientAdapterFactory,
     transformStackEventDataIntoTracingData,
-    telemetrySender,
+    telemetrySenderFactory,
     logger,
   }: IInputs,
 ) {
@@ -51,7 +51,7 @@ async function invoke(
       },
     });
 
-    await telemetrySender.sendTracingData(tracingData);
+    await telemetrySenderFactory().sendTracingData(tracingData);
   }
 }
 
