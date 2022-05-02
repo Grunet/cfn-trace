@@ -68,9 +68,10 @@ Otherwise check out
 [its official docs](https://opentelemetry.io/docs/collector/getting-started/)
 for alternative approaches.
 
-Create a ```docker-compose.yaml``` file and a ```config.yaml``` file in the same directory.
+Create a `docker-compose.yaml` file and a `config.yaml` file in the same
+directory.
 
-```docker-compose.yaml```
+`docker-compose.yaml`
 
 ```
 version: "3.9"
@@ -83,7 +84,7 @@ services:
       - "4318:4318"
 ```
 
-```config.yaml```
+`config.yaml`
 
 ```
 receivers:
@@ -142,20 +143,21 @@ $Env:AWS_DEFAULT_REGION="us-west-2"
 In this new shell with the AWS environment variables present, run the following
 command, after replacing the dummy value with your own.
 
-Afterwards, you should see the collector output raw trace/span information into
-its shell's console.
-
 #### Linux or MacOS
 
 ```
 ./cfn-trace --stack-name <your root stack's name>
 ```
 
+The collector's shell should be displaying raw trace/span information.
+
 #### Windows
 
 ```
 .\cfn-trace.exe --stack-name <your root stack's name>
 ```
+
+The collector's shell should be displaying raw trace/span information.
 
 #### How to Export to a Vendor?
 
