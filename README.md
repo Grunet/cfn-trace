@@ -63,7 +63,7 @@ Leaves a binary named `cfn-trace` in the current working directory.
 
 ### Setup a Local OpenTelemetry Collector
 
-If you use Docker, the following should get you setup. Otherwise check out
+If you can use Docker and Docker Compose, the following should get you setup. Otherwise check out
 [its official docs](https://opentelemetry.io/docs/collector/getting-started/)
 for alternative approaches.
 
