@@ -68,7 +68,9 @@ Otherwise check out
 [its official docs](https://opentelemetry.io/docs/collector/getting-started/)
 for alternative approaches.
 
-Create a docker-compose.yaml file as follows
+Create a ```docker-compose.yaml``` file and a ```config.yaml``` file in the same directory.
+
+```docker-compose.yaml```
 
 ```
 version: "3.9"
@@ -81,8 +83,7 @@ services:
       - "4318:4318"
 ```
 
-And then in the same directory, create a config.yaml file as follows to override
-the default the image comes with
+```config.yaml```
 
 ```
 receivers:
