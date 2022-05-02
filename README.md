@@ -166,7 +166,21 @@ are available
 
 ## Validating the Binaries Haven't Been Compromised Since They Were Published
 
-TODO
+The [Sigstore](https://www.sigstore.dev/) project's `cosign` tool was used to
+sign the zips of the binaries. To check for post-publish tamperment, you'll need
+to [install cosign](https://docs.sigstore.dev/cosign/installation) first.
+
+Using the zip for Linux as an example, here is how you can do the check.
+
+```
+wget https://github.com/Grunet/cfn-trace/releases/latest/download/cfn-trace-x86_64-unknown-linux-gnu.zip
+wget https://github.com/Grunet/cfn-trace/releases/latest/download/cfn-trace-x86_64-unknown-linux-gnu.zip.pem
+wget https://github.com/Grunet/cfn-trace/releases/latest/download/cfn-trace-x86_64-unknown-linux-gnu.zip.sig
+cosign verify-blob --cert ./cfn-trace-x86_64-unknown-linux-gnu.zip.pem --signature ./cfn-trace-x86_64-unknown-linux-gnu.zip.sig ./cfn-trace-x86_64-unknown-linux-gnu.zip
+```
+
+If it hasn't been tampered with, you should see the text "Verified OK" show up
+in the output.
 
 ## Why is a Collector Needed In the First Place?
 
