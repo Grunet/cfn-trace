@@ -33,14 +33,22 @@ Deno.test("Passing --version logs the version to the console", async () => {
   await invoke({
     cliArgs: parsedCliArgs,
     versionData: mockVersionData,
-    cloudformationClientAdapter: {
+    cloudformationClientAdapterFactory: () => ({
       getEventsFromMostRecentDeploy() {
         return Promise.resolve({ stackEvents: [] });
       },
-    },
+    }),
     transformStackEventDataIntoTracingData: () => {
-      return Promise.resolve({ spanDataByConstructedId: new Map() });
+      return Promise.resolve({
+        spanDataByConstructedId: new Map(),
+        rootConstructedId: "",
+      });
     },
+    telemetrySenderFactory: () => ({
+      sendTracingData() {
+        return Promise.resolve();
+      },
+    }),
     logger: mockLogger,
   });
 
