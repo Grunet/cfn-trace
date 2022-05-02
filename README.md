@@ -61,9 +61,10 @@ rm ./cfn-trace-aarch64-apple-darwin.zip
 
 Leaves a binary named `cfn-trace` in the current working directory.
 
-### Setup a Local OpenTelemetry Collector
+### Setup a (Local) OpenTelemetry Collector
 
-If you can use Docker and Docker Compose, the following should get you setup. Otherwise check out
+If you can use Docker and Docker Compose, the following should get you setup.
+Otherwise check out
 [its official docs](https://opentelemetry.io/docs/collector/getting-started/)
 for alternative approaches.
 
