@@ -173,7 +173,7 @@ are available
 
 - `--version` - this will echo the version of the binary to the console
 - `--stack-name` - set this to the name of a root Cloudformation stack to
-  generate a trace from it's most recent deploy
+  generate a trace from its most recent deploy
 
 ## Validating the Binaries Haven't Been Compromised Since They Were Published
 
