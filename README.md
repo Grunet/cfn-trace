@@ -115,8 +115,7 @@ Then start the collector by running `docker compose up` from this directory.
 For the moment, the only way to pass AWS credentials and the region for the
 binary to use is via environment variables.
 
-In a new shell (i.e. not the one the collector is running from), setup the
-following environment variables (defined in
+In a new shell, setup the following environment variables (defined in
 [this AWS doc](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html)),
 after replacing the dummy values with your own.
 
