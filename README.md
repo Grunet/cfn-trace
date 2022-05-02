@@ -9,8 +9,8 @@ Captures Cloudformation nested stack deploy events as traces
 Before you start, you'll need to have an
 [AWS access key and secret](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys)
 on hand, as well as the name of a Cloudformation stack you have permissions to
-call
-[the DescribeStackEvents API](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_DescribeStackEvents.html)
+call the
+[DescribeStackEvents API](https://docs.aws.amazon.com/AWSCloudFormation/latest/APIReference/API_DescribeStackEvents.html)
 on.
 
 ### Download the Zip And Extract the Binary
