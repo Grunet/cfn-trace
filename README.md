@@ -44,7 +44,7 @@ Leaves an executable named `cfn-trace.exe` in the current working directory.
 #### MacOS (with Intel chip)
 
 ```
-curl -O https://github.com/Grunet/cfn-trace/releases/latest/download/cfn-trace-x86_64-apple-darwin.zip
+curl -OL https://github.com/Grunet/cfn-trace/releases/latest/download/cfn-trace-x86_64-apple-darwin.zip
 unzip ./cfn-trace-x86_64-apple-darwin.zip
 rm ./cfn-trace-x86_64-apple-darwin.zip
 ```
@@ -54,13 +54,12 @@ Leaves a binary named `cfn-trace` in the current working directory.
 #### MacOS (with Apple chip)
 
 ```
-curl -O https://github.com/Grunet/cfn-trace/releases/latest/download/cfn-trace-aarch64-apple-darwin.zip
+curl -OL https://github.com/Grunet/cfn-trace/releases/latest/download/cfn-trace-aarch64-apple-darwin.zip
 unzip ./cfn-trace-aarch64-apple-darwin.zip
 rm ./cfn-trace-aarch64-apple-darwin.zip
 ```
 
-Leaves a binary named `cfn-trace` in the current working directory. (*I have not
-tried this myself)
+Leaves a binary named `cfn-trace` in the current working directory.
 
 ### Setup a Local OpenTelemetry Collector
 
