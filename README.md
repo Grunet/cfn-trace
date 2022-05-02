@@ -182,9 +182,18 @@ cosign verify-blob --cert ./cfn-trace-x86_64-unknown-linux-gnu.zip.pem --signatu
 If it hasn't been tampered with, you should see the text "Verified OK" show up
 in the output.
 
-## Why is a Collector Needed In the First Place?
+## Why is a Collector Needed At All?
 
-TODO
+As of this writing, Deno
+[doesn't support gRPC](https://github.com/denoland/deno/issues/3326), meaning
+[JSON-encoded protobuf format via OTLP/HTTP](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/protocol/otlp.md#otlphttp)
+is its only option for exporting OpenTelemetry data (like is the case for
+browsers). However, this is still classified as experimental, so vendors have
+not implemented ways to directly receive it yet (as far as I am aware).
+
+However, the OpenTelemetry Collector is able to receive it, and then transform
+it into a format that can be sent to a vendor. Hence why it is needed, as a
+workaround for the time being.
 
 ## Contributing
 
@@ -198,4 +207,4 @@ just use your fork's repository in the URL instead of this one's.)
 
 FYI there are no commit hooks or CI commands currently that will save and
 re-commit any changes made by the code auto-formatter, so you may have to run
-`make format` before you finish a PR to make up for this.
+`make format` before you finish a PR to work around this.
