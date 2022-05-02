@@ -2,7 +2,7 @@
 
 Captures Cloudformation nested stack deploy events as traces
 
-(TODO - put a screenshot here illustrating what that looks like)
+![Five bars of equal height, each one less wide than the one above it, stacked on top of each other to look like an upside down pyramid. Each bar represents a span of time, and its duration is written out on the bar. On the left and inline with each bar is the name associated to each bar, corresponding to the name given to the resource in Cloudformation. There are connecting lines between the names indicating that each bar is considered a child of the one above it.](./examples/hollow-only-nesting/visualization.png)
 
 ## Getting Started
 
