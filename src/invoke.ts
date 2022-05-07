@@ -13,7 +13,7 @@ interface IInputs {
   transformStackEventDataIntoTracingData:
     typeof transformStackEventDataIntoTracingData;
   telemetrySenderFactory: () => ITelemetrySender;
-  logger: ILogger;
+  consoleWriter: IWriteToTheConsole;
 }
 
 interface IExpectedCliArgs {
@@ -25,8 +25,8 @@ interface IVersionData {
   version: string;
 }
 
-interface ILogger {
-  info: (message: string) => void;
+interface IWriteToTheConsole {
+  write: (message: string) => void;
 }
 
 async function invoke(
@@ -36,11 +36,11 @@ async function invoke(
     cloudformationClientAdapterFactory,
     transformStackEventDataIntoTracingData,
     telemetrySenderFactory,
-    logger,
+    consoleWriter,
   }: IInputs,
 ) {
   if (cliArgs["version"] === true) {
-    logger.info(versionData.version);
+    consoleWriter.write(versionData.version);
   }
 
   if (cliArgs["stack-name"]) {

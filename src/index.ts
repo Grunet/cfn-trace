@@ -26,5 +26,7 @@ await invoke({
   telemetrySenderFactory: () => {
     return createTelemetrySender();
   },
-  logger: console,
+  consoleWriter: {
+    write: console.log,
+  },
 });
