@@ -102,7 +102,10 @@ async function __transformStackEventDataIntoTracingData({
       constructedIdForTheResource,
     });
 
-    lookForAStackResource(stackEvent);
+    lookForAStackResource({
+      stackEvent,
+      constructedIdForTheResource,
+    });
 
     lookForAnyChildSpan({
       stackEvent,
@@ -179,13 +182,17 @@ function createDirectlyNestedStackFinder(
     getDirectlyNestedStackData() {
       return directlyNestedStackDataByResourceId;
     },
-    lookForAStackResource(
-      {
+    lookForAStackResource({
+      stackEvent: {
         resourceIdPerCloudformation,
         resourceIdPerTheServiceItsFrom,
         resourceType,
-      }: IAdaptedStackEvent,
-    ) {
+      },
+      constructedIdForTheResource,
+    }: {
+      stackEvent: IAdaptedStackEvent;
+      constructedIdForTheResource: string;
+    }) {
       if (
         (resourceType === "AWS::CloudFormation::Stack") &&
         (resourceIdPerCloudformation !== currentStackName)
@@ -200,11 +207,7 @@ function createDirectlyNestedStackFinder(
 
         if (nestedStackName) {
           directlyNestedStackDataByResourceId.set(
-            //TODO - factor this call further out
-            constructId({
-              stackNameResourceIsFrom: currentStackName,
-              resourceIdPerCloudformation,
-            }),
+            constructedIdForTheResource,
             nestedStackName,
           );
         }
