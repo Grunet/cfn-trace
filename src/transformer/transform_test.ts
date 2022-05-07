@@ -170,6 +170,102 @@ Deno.test("Correctly transforms the events from a 2-tier nested stack with 1 non
   assertEquals(outputs, expectedOutputs);
 });
 
+Deno.test("Correctly transforms the events from a freshly created stack", async () => {
+  //ARRANGE
+  const inputs: IInputs = {
+    stackName: "rootStackName",
+    dependencies: {
+      cloudformationClientAdapter: {
+        getEventsFromMostRecentDeploy({ stackName }) {
+          switch (stackName) {
+            case "rootStackName":
+              return Promise.resolve({
+                stackEvents: [
+                  createStackEvent({
+                    resourceIdPerCloudformation: "rootStackName",
+                    resourceIdPerTheServiceItsFrom:
+                      "arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000",
+                    resourceStatus: "CREATE_COMPLETE",
+                    resourceType: "AWS::CloudFormation::Stack",
+                    timestamp: new Date("2022-04-11T00:00:30.000Z"),
+                  }),
+                  createStackEvent({
+                    resourceIdPerCloudformation: "TheEcsCluster",
+                    resourceIdPerTheServiceItsFrom: "TheClusterName",
+                    resourceStatus: "CREATE_COMPLETE",
+                    resourceType: "AWS::ECS::Cluster",
+                    timestamp: new Date("2022-04-11T00:00:15.000Z"),
+                  }),
+                  createStackEvent({
+                    resourceIdPerCloudformation: "TheEcsCluster",
+                    resourceIdPerTheServiceItsFrom: "TheClusterName",
+                    resourceStatus: "CREATE_IN_PROGRESS",
+                    resourceType: "AWS::ECS::Cluster",
+                    timestamp: new Date("2022-04-11T00:00:10.000Z"),
+                  }),
+                  createStackEvent({
+                    resourceIdPerCloudformation: "rootStackName",
+                    resourceIdPerTheServiceItsFrom:
+                      "arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000",
+                    resourceStatus: "CREATE_IN_PROGRESS",
+                    resourceType: "AWS::CloudFormation::Stack",
+                    timestamp: new Date("2022-04-11T00:00:05.000Z"),
+                  }),
+                  createStackEvent({
+                    resourceIdPerCloudformation: "rootStackName",
+                    resourceIdPerTheServiceItsFrom:
+                      "arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000",
+                    resourceStatus: "REVIEW_IN_PROGRESS",
+                    resourceType: "AWS::CloudFormation::Stack",
+                    timestamp: new Date("2022-04-11T00:00:00.000Z"),
+                  }),
+                ],
+              });
+            default:
+              throw new Error(`${stackName} not found in the mock's setup`);
+          }
+        },
+      },
+    },
+  };
+
+  //ACT
+  const outputs = await transformStackEventDataIntoTracingData(inputs);
+
+  //ASSERT
+  const spanDataByConstructedId = new Map<string, ISpanData>();
+
+  const rootConstructedId =
+    "rootStackName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack";
+
+  spanDataByConstructedId.set(
+    "rootStackName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack",
+    {
+      childSpanIds: new Set<string>(["TheEcsCluster-TheClusterName-AWS::ECS::Cluster"]),
+      name: "rootStackName",
+      startInstant: new Date("2022-04-11T00:00:05.000Z"),
+      endInstant: new Date("2022-04-11T00:00:30.000Z"),
+    },
+  );
+
+  spanDataByConstructedId.set(
+    "TheEcsCluster-TheClusterName-AWS::ECS::Cluster",
+    {
+      childSpanIds: new Set<string>(),
+      name: "TheEcsCluster",
+      startInstant: new Date("2022-04-11T00:00:10.000Z"),
+      endInstant: new Date("2022-04-11T00:00:15.000Z"),
+    },
+  );
+
+  const expectedOutputs: ITracingData = {
+    spanDataByConstructedId,
+    rootConstructedId,
+  };
+
+  assertEquals(outputs, expectedOutputs);
+});
+
 function createStackEvent(
   partialStackEvent: Partial<IAdaptedStackEvent>,
 ): IAdaptedStackEvent {
