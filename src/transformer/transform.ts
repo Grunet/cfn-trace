@@ -315,7 +315,8 @@ function createSpanDataUpdater(
         return;
       }
 
-      if (resourceStatus === "UPDATE_COMPLETE") {
+      //TODO - deduplicate these constants with the ones defined in the cloudformation client adapter, or see if the AWS SDK already provides them
+      if (resourceStatus === "UPDATE_COMPLETE" || resourceStatus === "CREATE_COMPLETE") {
         const currentTransformedState: ISpanData = spanDataByConstructedId.get(
           constructedIdForTheResource,
         ) ?? {
@@ -334,7 +335,7 @@ function createSpanDataUpdater(
         );
       }
 
-      if (resourceStatus === "UPDATE_IN_PROGRESS") {
+      if (resourceStatus === "UPDATE_IN_PROGRESS" || resourceStatus === "CREATE_IN_PROGRESS") {
         const currentTransformedState: ISpanData = spanDataByConstructedId.get(
           constructedIdForTheResource,
         ) ?? {
