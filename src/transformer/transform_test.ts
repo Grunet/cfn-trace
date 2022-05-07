@@ -129,15 +129,14 @@ Deno.test("Correctly transforms the events from creating a 2-tier nested stack w
   //ASSERT
   const spanDataByConstructedId = new Map<string, ISpanData>();
   //From root stack
-  const rootConstructedId =
-    "rootStackName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack";
+  const rootConstructedId = "rootStackName-rootStackName";
 
   spanDataByConstructedId.set(
-    "rootStackName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack",
+    "rootStackName-rootStackName",
     {
       childSpanIds: new Set<string>([
-        "TheEcsCluster-TheClusterName-AWS::ECS::Cluster",
-        "FirstNestedStackResourceName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack",
+        "rootStackName-TheEcsCluster",
+        "rootStackName-FirstNestedStackResourceName",
       ]),
       name: "rootStackName",
       startInstant: new Date("2022-04-11T00:00:00.000Z"),
@@ -145,7 +144,7 @@ Deno.test("Correctly transforms the events from creating a 2-tier nested stack w
     },
   );
   spanDataByConstructedId.set(
-    "TheEcsCluster-TheClusterName-AWS::ECS::Cluster",
+    "rootStackName-TheEcsCluster",
     {
       childSpanIds: new Set<string>(),
       name: "TheEcsCluster",
@@ -155,10 +154,10 @@ Deno.test("Correctly transforms the events from creating a 2-tier nested stack w
   );
   //1st nested stack as resource of the root stack
   spanDataByConstructedId.set(
-    "FirstNestedStackResourceName-arn:aws:cloudformation:us-east-1:000000000000:stack/rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA/00aa00a0-a00a-00aa-0a00-00a0a0a00000-AWS::CloudFormation::Stack",
+    "rootStackName-FirstNestedStackResourceName",
     {
       childSpanIds: new Set<string>([
-        "TheEcsService--AWS::ECS::Service",
+        "rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA-TheEcsService",
       ]),
       name: "FirstNestedStackResourceName",
       startInstant: new Date("2022-04-11T00:00:15.000Z"),
@@ -166,12 +165,15 @@ Deno.test("Correctly transforms the events from creating a 2-tier nested stack w
     },
   );
   //From 1st nested stack's resources
-  spanDataByConstructedId.set("TheEcsService--AWS::ECS::Service", {
-    childSpanIds: new Set<string>(),
-    name: "TheEcsService",
-    startInstant: new Date("2022-04-11T00:00:17.000Z"),
-    endInstant: new Date("2022-04-11T00:00:18.000Z"),
-  });
+  spanDataByConstructedId.set(
+    "rootStackName-FirstNestedStackResourceName-AAAA0AAAAAA-TheEcsService",
+    {
+      childSpanIds: new Set<string>(),
+      name: "TheEcsService",
+      startInstant: new Date("2022-04-11T00:00:17.000Z"),
+      endInstant: new Date("2022-04-11T00:00:18.000Z"),
+    },
+  );
 
   const expectedOutputs: ITracingData = {
     spanDataByConstructedId,

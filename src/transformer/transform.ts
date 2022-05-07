@@ -190,17 +190,24 @@ function createDirectlyNestedStackFinder(
         (resourceType === "AWS::CloudFormation::Stack") &&
         (resourceIdPerCloudformation !== currentStackName)
       ) {
-        //The string being operated on should be the ARN in this case
+        if (
+          !resourceIdPerTheServiceItsFrom.startsWith("arn:aws:cloudformation")
+        ) {
+          return;
+        }
+
         const nestedStackName = resourceIdPerTheServiceItsFrom.split("/")[1];
 
-        directlyNestedStackDataByResourceId.set(
-          //TODO - factor this call further out
-          constructId({
-            stackNameResourceIsFrom: currentStackName,
-            resourceIdPerCloudformation,
-          }),
-          nestedStackName,
-        );
+        if (nestedStackName) {
+          directlyNestedStackDataByResourceId.set(
+            //TODO - factor this call further out
+            constructId({
+              stackNameResourceIsFrom: currentStackName,
+              resourceIdPerCloudformation,
+            }),
+            nestedStackName,
+          );
+        }
       }
     },
   };
