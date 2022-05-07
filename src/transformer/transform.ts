@@ -25,7 +25,10 @@ async function transformStackEventDataIntoTracingData(
       stackName,
       cloudformationClientAdapter,
       spanDataByConstructedId, //This will mutate/populate spanDataByConstructedId
-      stackResourceIdFromWithinParentStack: stackName, //This isn't quite logically correct for the root stack, but it works out (see comment below)
+      stackConstructedIdFromWithinParentStack: constructId({
+        stackNameResourceIsFrom: stackName,
+        resourceIdPerCloudformation: stackName,
+      }), //This isn't quite logically correct for the root stack, but it works out (see comment below)
       createSpanForStack: true,
     });
 
@@ -41,7 +44,7 @@ interface IPrivateRecursiveInputs {
   spanDataByConstructedId: Map<string, ISpanData>;
   //This is needed because of the choice to use the data from the stack when it's a child of its parent stack to create its span (vs the data from its own stack events)
   //With this decision, there needs to be some way to know what that span was when processing its own stack events, so its child span pointers can be set from there
-  stackResourceIdFromWithinParentStack: string;
+  stackConstructedIdFromWithinParentStack: string;
   createSpanForStack: boolean;
 }
 
@@ -49,7 +52,7 @@ async function __transformStackEventDataIntoTracingData({
   stackName,
   cloudformationClientAdapter,
   spanDataByConstructedId,
-  stackResourceIdFromWithinParentStack,
+  stackConstructedIdFromWithinParentStack,
   createSpanForStack,
 }: IPrivateRecursiveInputs): Promise<
   { constructedIdForTheCurrentStack: string | undefined }
@@ -59,11 +62,6 @@ async function __transformStackEventDataIntoTracingData({
   const { stackEvents } = await cloudformationClientAdapter
     .getEventsFromMostRecentDeploy({
       stackName: currentStackName,
-    });
-
-  const { getCurrentStackArn, lookForCurrentStackArn } =
-    createCurrentStackArnFinder({
-      currentStackName,
     });
 
   const { getCurrentStackConstructedId, lookForCurrentStackConstructedId } =
@@ -90,18 +88,14 @@ async function __transformStackEventDataIntoTracingData({
     const stackEvent of stackEvents
   ) {
     const {
+      stackName: stackNameResourceIsFrom,
       resourceIdPerCloudformation,
-      resourceIdPerTheServiceItsFrom,
-      resourceType,
     } = stackEvent;
 
     const constructedIdForTheResource = constructId({
+      stackNameResourceIsFrom,
       resourceIdPerCloudformation,
-      resourceIdPerTheServiceItsFrom,
-      resourceType,
     });
-
-    lookForCurrentStackArn(stackEvent);
 
     lookForCurrentStackConstructedId({
       stackEvent,
@@ -123,56 +117,28 @@ async function __transformStackEventDataIntoTracingData({
   }
 
   setChildSpanIdsForStack({
-    constructedIdOfCurrentStack: constructId({
-      resourceIdPerCloudformation: stackResourceIdFromWithinParentStack,
-      resourceIdPerTheServiceItsFrom: getCurrentStackArn() ?? "",
-      resourceType: "AWS::CloudFormation::Stack",
-    }),
+    constructedIdOfCurrentStack: stackConstructedIdFromWithinParentStack,
     spanDataByConstructedId,
   });
 
   const directlyNestedStackData = getDirectlyNestedStackData();
   //This could probably be done more in parallel with a Promise.all***, but keeping things simple for now in case AWS rate limiting bites
   for (
-    const [nestedStackResourceIdFromParentStack, nestedStackName]
+    const [nestedStackConstructedIdFromParentStack, nestedStackName]
       of directlyNestedStackData
   ) {
     await __transformStackEventDataIntoTracingData({
       stackName: nestedStackName,
       cloudformationClientAdapter,
       spanDataByConstructedId,
-      stackResourceIdFromWithinParentStack:
-        nestedStackResourceIdFromParentStack,
+      stackConstructedIdFromWithinParentStack:
+        nestedStackConstructedIdFromParentStack,
       createSpanForStack: false,
     });
   }
 
   return {
     constructedIdForTheCurrentStack: getCurrentStackConstructedId(),
-  };
-}
-
-function createCurrentStackArnFinder(
-  { currentStackName }: { currentStackName: string },
-) {
-  let stackArn: string | undefined;
-
-  return {
-    getCurrentStackArn() {
-      return stackArn;
-    },
-    lookForCurrentStackArn(
-      { resourceIdPerCloudformation, resourceIdPerTheServiceItsFrom }:
-        IAdaptedStackEvent,
-    ) {
-      if (resourceIdPerCloudformation !== currentStackName) {
-        return;
-      }
-
-      if (resourceIdPerTheServiceItsFrom) {
-        stackArn = resourceIdPerTheServiceItsFrom;
-      }
-    },
   };
 }
 
@@ -228,7 +194,11 @@ function createDirectlyNestedStackFinder(
         const nestedStackName = resourceIdPerTheServiceItsFrom.split("/")[1];
 
         directlyNestedStackDataByResourceId.set(
-          resourceIdPerCloudformation,
+          //TODO - factor this call further out
+          constructId({
+            stackNameResourceIsFrom: currentStackName,
+            resourceIdPerCloudformation,
+          }),
           nestedStackName,
         );
       }
@@ -255,7 +225,7 @@ function createChildSpanIdGatherer(
       );
       if (!spanDataForCurrentStack) {
         throw new Error(
-          `Span could not be constructed for stack named ${currentStackName}`,
+          `Span could not be constructed for stack with constructed id ${constructedIdOfCurrentStack}`,
         );
       }
 
@@ -316,7 +286,10 @@ function createSpanDataUpdater(
       }
 
       //TODO - deduplicate these constants with the ones defined in the cloudformation client adapter, or see if the AWS SDK already provides them
-      if (resourceStatus === "UPDATE_COMPLETE" || resourceStatus === "CREATE_COMPLETE") {
+      if (
+        resourceStatus === "UPDATE_COMPLETE" ||
+        resourceStatus === "CREATE_COMPLETE"
+      ) {
         const currentTransformedState: ISpanData = spanDataByConstructedId.get(
           constructedIdForTheResource,
         ) ?? {
@@ -335,7 +308,10 @@ function createSpanDataUpdater(
         );
       }
 
-      if (resourceStatus === "UPDATE_IN_PROGRESS" || resourceStatus === "CREATE_IN_PROGRESS") {
+      if (
+        resourceStatus === "UPDATE_IN_PROGRESS" ||
+        resourceStatus === "CREATE_IN_PROGRESS"
+      ) {
         const currentTransformedState: ISpanData = spanDataByConstructedId.get(
           constructedIdForTheResource,
         ) ?? {
@@ -358,15 +334,13 @@ function createSpanDataUpdater(
 }
 
 interface IConstructIdInputs {
+  stackNameResourceIsFrom: string;
   resourceIdPerCloudformation: string;
-  resourceIdPerTheServiceItsFrom: string;
-  resourceType: string;
 }
 function constructId(
-  { resourceIdPerCloudformation, resourceIdPerTheServiceItsFrom, resourceType }:
-    IConstructIdInputs,
+  { stackNameResourceIsFrom, resourceIdPerCloudformation }: IConstructIdInputs,
 ) {
-  return `${resourceIdPerCloudformation}-${resourceIdPerTheServiceItsFrom}-${resourceType}`;
+  return `${stackNameResourceIsFrom}-${resourceIdPerCloudformation}`;
 }
 
 export { transformStackEventDataIntoTracingData };
