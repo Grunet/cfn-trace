@@ -2,6 +2,8 @@ import { IExpectedCliArgs, invoke, IVersionData } from "./invoke.ts";
 
 import { parse } from "https://deno.land/std@0.132.0/flags/mod.ts";
 import versionDataFromFile from "./../version.json" assert { type: "json" };
+
+import { getOrCreateDiagnosticsManagerSingleton } from "./shared/internalDiagnostics/diagnosticsManager.ts";
 import {
   createCloudformationClientAdapter,
 } from "./cloudformationClientAdapter/client.ts";
@@ -20,11 +22,18 @@ await invoke({
       accessKeyId: Deno.env.get("AWS_ACCESS_KEY_ID") ?? "", //TODO - add more explicit validation for these
       secretAccessKey: Deno.env.get("AWS_SECRET_ACCESS_KEY") ?? "",
       region: Deno.env.get("AWS_DEFAULT_REGION") ?? "",
+      dependencies: {
+        diagnosticsManager: getOrCreateDiagnosticsManagerSingleton(),
+      },
     });
   },
   transformStackEventDataIntoTracingData,
   telemetrySenderFactory: () => {
-    return createTelemetrySender();
+    return createTelemetrySender({
+      dependencies: {
+        diagnosticsManager: getOrCreateDiagnosticsManagerSingleton(),
+      },
+    });
   },
   consoleWriter: {
     write: console.log,

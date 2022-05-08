@@ -1,5 +1,5 @@
 interface IReportSelfDiagnostics {
-  report: (diagnostic: any) => void; //TODO - improve this interface
+  report: (diagnostic: unknown) => void; //TODO - improve this interface
 }
 
 interface IRegister3rdPartyDiagnostics {
@@ -8,7 +8,7 @@ interface IRegister3rdPartyDiagnostics {
 
 class DiagnosticsManager
   implements IReportSelfDiagnostics, IRegister3rdPartyDiagnostics {
-  public report(diagnostic: any): void {
+  public report(diagnostic: unknown): void {
     console.log(diagnostic);
   }
 
@@ -17,11 +17,17 @@ class DiagnosticsManager
   }
 }
 
-function createDiagnosticsManager():
+let diagnosticManager: DiagnosticsManager | undefined = undefined;
+
+function getOrCreateDiagnosticsManagerSingleton():
   & IReportSelfDiagnostics
   & IRegister3rdPartyDiagnostics {
-  return new DiagnosticsManager();
+  if (!diagnosticManager) {
+    diagnosticManager = new DiagnosticsManager();
+  }
+
+  return diagnosticManager;
 }
 
-export { createDiagnosticsManager };
+export { getOrCreateDiagnosticsManagerSingleton };
 export type { IRegister3rdPartyDiagnostics, IReportSelfDiagnostics };
