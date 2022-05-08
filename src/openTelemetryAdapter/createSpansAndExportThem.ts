@@ -2,6 +2,9 @@ import { IRegister3rdPartyDiagnostics } from "../shared/internalDiagnostics/diag
 import {
   Context,
   context,
+  diag,
+  DiagConsoleLogger,
+  DiagLogLevel,
   trace,
   Tracer,
 } from "https://cdn.skypack.dev/@opentelemetry/api@v1.1.0?dts";
@@ -30,6 +33,13 @@ async function createSpansAndExportThem(
   { tracingData, dependencies: { diagnosticsManager } }:
     ICreateSpansAndExportThemInputs,
 ) {
+  diagnosticsManager.register(() => {
+    diag.setLogger(
+      new DiagConsoleLogger(),
+      DiagLogLevel.DEBUG,
+    );
+  });
+
   const provider = new WebTracerProvider();
 
   diagnosticsManager.register(() => {
@@ -37,7 +47,6 @@ async function createSpansAndExportThem(
       new SimpleSpanProcessor(new ConsoleSpanExporter()),
     );
   });
-
   provider.addSpanProcessor(
     new SimpleSpanProcessor( //BatchSpanProcessor may be a better fit if cases come up with a large number of spans
       new OTLPTraceExporter({
