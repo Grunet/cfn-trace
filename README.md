@@ -171,9 +171,11 @@ what tweaks are needed to send the data to them).
 There isn't a `--help` argument yet, but here is a list of the arguments that
 are available
 
-- `--version` - this will echo the version of the binary to the console
+- `--debug` - this will turn on debug-level logging (mostly intended for
+  troubleshooting)
 - `--stack-name` - set this to the name of a root Cloudformation stack to
   generate a trace from its most recent deploy
+- `--version` - this will echo the version of the binary to the console
 
 ## Validating the Binaries Haven't Been Compromised Since They Were Published
 

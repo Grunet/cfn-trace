@@ -8,19 +8,19 @@ Deno.test("Passing --version logs the version to the console", async () => {
     version: true,
   };
 
-  const mockLogger = (function () {
-    const interceptedLogs: {
-      info: string[];
+  const mockConsoleWriter = (function () {
+    const interceptedOutput: {
+      messages: string[];
     } = {
-      info: [],
+      messages: [],
     };
 
     return {
-      getInterceptedLogs() {
-        return interceptedLogs;
+      getInterceptedOutput() {
+        return interceptedOutput;
       },
-      info: (message: string): void => {
-        interceptedLogs.info.push(message);
+      write: (message: string): void => {
+        interceptedOutput.messages.push(message);
       },
     };
   })();
@@ -33,6 +33,10 @@ Deno.test("Passing --version logs the version to the console", async () => {
   await invoke({
     cliArgs: parsedCliArgs,
     versionData: mockVersionData,
+    createDiagnosticsManager: () => ({
+      report() {},
+      register() {},
+    }),
     cloudformationClientAdapterFactory: () => ({
       getEventsFromMostRecentDeploy() {
         return Promise.resolve({ stackEvents: [] });
@@ -49,9 +53,12 @@ Deno.test("Passing --version logs the version to the console", async () => {
         return Promise.resolve();
       },
     }),
-    logger: mockLogger,
+    consoleWriter: mockConsoleWriter,
   });
 
   //ASSERT
-  assertEquals(mockLogger.getInterceptedLogs()["info"][0], "theVersion");
+  assertEquals(
+    mockConsoleWriter.getInterceptedOutput().messages[0],
+    "theVersion",
+  );
 });

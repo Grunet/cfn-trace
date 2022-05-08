@@ -1,3 +1,4 @@
+import { IRegister3rdPartyDiagnostics } from "../shared/internalDiagnostics/diagnosticsManager.ts";
 import { createSpansAndExportThem } from "./createSpansAndExportThem.ts";
 
 interface ITracingData {
@@ -18,13 +19,34 @@ interface ITelemetrySender {
 }
 
 class TelemetrySender implements ITelemetrySender {
+  constructor(
+    { dependencies: { diagnosticsManager } }: ICreateTelemetrySenderInputs,
+  ) {
+    this.diagnosticsManager = diagnosticsManager;
+  }
+
+  private diagnosticsManager: IRegister3rdPartyDiagnostics;
+
   async sendTracingData(tracingData: ITracingData): Promise<void> {
-    await createSpansAndExportThem(tracingData);
+    await createSpansAndExportThem({
+      tracingData,
+      dependencies: { diagnosticsManager: this.diagnosticsManager },
+    });
   }
 }
 
-function createTelemetrySender(): ITelemetrySender {
-  return new TelemetrySender();
+interface ICreateTelemetrySenderInputs {
+  dependencies: IDependencies;
+}
+
+interface IDependencies {
+  diagnosticsManager: IRegister3rdPartyDiagnostics;
+}
+
+function createTelemetrySender(
+  inputs: ICreateTelemetrySenderInputs,
+): ITelemetrySender {
+  return new TelemetrySender(inputs);
 }
 
 export { createTelemetrySender };

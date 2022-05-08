@@ -1,11 +1,15 @@
+import { IRegister3rdPartyDiagnostics } from "../shared/internalDiagnostics/diagnosticsManager.ts";
 import {
   Context,
   context,
+  diag,
+  DiagConsoleLogger,
+  DiagLogLevel,
   trace,
   Tracer,
 } from "https://cdn.skypack.dev/@opentelemetry/api@v1.1.0?dts";
 import {
-  // ConsoleSpanExporter,
+  ConsoleSpanExporter,
   SimpleSpanProcessor,
   SpanExporter,
 } from "https://cdn.skypack.dev/@opentelemetry/sdk-trace-base@v1.2.0?dts";
@@ -16,14 +20,35 @@ import "./setupShimsToMakeOtelForBrowserWorkForDeno.ts"; //has side effects
 
 import { ISpanData, ITracingData } from "./sender.ts";
 
-async function createSpansAndExportThem(tracingData: ITracingData) {
+interface ICreateSpansAndExportThemInputs {
+  tracingData: ITracingData;
+  dependencies: IDependencies;
+}
+
+interface IDependencies {
+  diagnosticsManager: IRegister3rdPartyDiagnostics;
+}
+
+async function createSpansAndExportThem(
+  { tracingData, dependencies: { diagnosticsManager } }:
+    ICreateSpansAndExportThemInputs,
+) {
+  diagnosticsManager.register(() => {
+    diag.setLogger(
+      new DiagConsoleLogger(),
+      DiagLogLevel.DEBUG,
+    );
+  });
+
   const provider = new WebTracerProvider();
 
-  //BatchSpanProcessor may be a better fit if cases come up with a large number of spans
-  // provider.addSpanProcessor(new SimpleSpanProcessor(new ConsoleSpanExporter())); //TODO - put this behind some sort of "debug" flag
-
+  diagnosticsManager.register(() => {
+    provider.addSpanProcessor(
+      new SimpleSpanProcessor(new ConsoleSpanExporter()),
+    );
+  });
   provider.addSpanProcessor(
-    new SimpleSpanProcessor(
+    new SimpleSpanProcessor( //BatchSpanProcessor may be a better fit if cases come up with a large number of spans
       new OTLPTraceExporter({
         //These settings were copied/adjusted from here - https://github.com/open-telemetry/opentelemetry-js/tree/main/experimental/packages/exporter-trace-otlp-http#traces-in-web
         url: "http://localhost:4318/v1/traces", // url is optional and can be omitted, BUT Skypack's bundling is currently doing something very odd and setting the default to the old value of http://localhost:55681/v1/traces (if you go to definition on OTLPTraceExporter you'll see this), so the new default port of 4318 has to be explicitly used here to workaround this

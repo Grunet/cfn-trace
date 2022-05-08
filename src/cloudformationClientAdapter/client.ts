@@ -1,3 +1,4 @@
+import { IReportSelfDiagnostics } from "../shared/internalDiagnostics/diagnosticsManager.ts";
 import {
   CloudFormationClient,
   DescribeStackEventsCommand,
@@ -34,8 +35,12 @@ interface IAdaptedStackEvent {
 
 class CloudformationClientAdapter implements ICloudformationClientAdapter {
   constructor(
-    { accessKeyId, secretAccessKey, region }:
-      ICreateCloudformationClientAdapterInputs,
+    {
+      accessKeyId,
+      secretAccessKey,
+      region,
+      dependencies: { diagnosticsManager },
+    }: ICreateCloudformationClientAdapterInputs,
   ) {
     this.cloudformationClient = new CloudFormationClient({
       credentials: {
@@ -44,9 +49,13 @@ class CloudformationClientAdapter implements ICloudformationClientAdapter {
       },
       region: region,
     });
+
+    this.diagnosticsManager = diagnosticsManager;
   }
 
   private cloudformationClient: CloudFormationClient;
+
+  private diagnosticsManager: IReportSelfDiagnostics;
 
   async getEventsFromMostRecentDeploy(
     inputs: IGetEventsFromMostRecentDeployInputs,
@@ -61,6 +70,11 @@ class CloudformationClientAdapter implements ICloudformationClientAdapter {
 
     const commandOutput: DescribeStackEventsCommandOutput = await this
       .cloudformationClient.send(command);
+
+    this.diagnosticsManager.report(
+      `DescribeStackEvents API response for stack named ${stackName}`,
+      commandOutput,
+    );
 
     const { StackEvents } = commandOutput;
 
@@ -164,6 +178,11 @@ interface ICreateCloudformationClientAdapterInputs {
   accessKeyId: string;
   secretAccessKey: string;
   region: string;
+  dependencies: IDependencies;
+}
+
+interface IDependencies {
+  diagnosticsManager: IReportSelfDiagnostics;
 }
 
 function createCloudformationClientAdapter(
