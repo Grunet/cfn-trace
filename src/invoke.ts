@@ -34,6 +34,7 @@ interface IInputs {
 }
 
 interface IExpectedCliArgs {
+  debug?: boolean;
   version?: boolean;
   "stack-name"?: string;
 }
@@ -62,14 +63,16 @@ async function invoke(
   }
 
   if (cliArgs["stack-name"]) {
+    const diagnosticsManager = createDiagnosticsManager({
+      shouldTurnOnDiagnostics: !!cliArgs["debug"],
+    });
+
     const tracingData = await transformStackEventDataIntoTracingData({
       stackName: cliArgs["stack-name"],
       dependencies: {
         cloudformationClientAdapter: cloudformationClientAdapterFactory({
           dependencies: {
-            diagnosticsManager: createDiagnosticsManager({
-              shouldTurnOnDiagnostics: true,
-            }),
+            diagnosticsManager,
           },
         }),
       },
@@ -77,9 +80,7 @@ async function invoke(
 
     await telemetrySenderFactory({
       dependencies: {
-        diagnosticsManager: createDiagnosticsManager({
-          shouldTurnOnDiagnostics: true,
-        }),
+        diagnosticsManager,
       },
     }).sendTracingData(tracingData);
   }
