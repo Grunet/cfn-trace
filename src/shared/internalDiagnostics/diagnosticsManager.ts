@@ -17,16 +17,38 @@ class DiagnosticsManager
   }
 }
 
-let diagnosticManager: DiagnosticsManager | undefined = undefined;
-
-function getOrCreateDiagnosticsManagerSingleton():
-  & IReportSelfDiagnostics
-  & IRegister3rdPartyDiagnostics {
-  if (!diagnosticManager) {
-    diagnosticManager = new DiagnosticsManager();
+class NullManager
+  implements IReportSelfDiagnostics, IRegister3rdPartyDiagnostics {
+  public report(_diagnostic: unknown): void {
   }
 
-  return diagnosticManager;
+  public register(_diagnosticDelegate: () => void): void {
+  }
+}
+
+interface IGetOrCreateDiagnosticsManagerSingletonInputs {
+  shouldTurnOnDiagnostics: boolean;
+}
+
+interface IGetOrCreateDiagnosticsManagerSingletonOutput
+  extends IReportSelfDiagnostics, IRegister3rdPartyDiagnostics {}
+
+let diagnosticManagers:
+  | IGetOrCreateDiagnosticsManagerSingletonOutput
+  | undefined = undefined;
+
+function getOrCreateDiagnosticsManagerSingleton(
+  { shouldTurnOnDiagnostics }: IGetOrCreateDiagnosticsManagerSingletonInputs,
+): IGetOrCreateDiagnosticsManagerSingletonOutput {
+  if (!diagnosticManagers) {
+    if (shouldTurnOnDiagnostics) {
+      diagnosticManagers = new DiagnosticsManager();
+    } else {
+      diagnosticManagers = new NullManager();
+    }
+  }
+
+  return diagnosticManagers;
 }
 
 export { getOrCreateDiagnosticsManagerSingleton };

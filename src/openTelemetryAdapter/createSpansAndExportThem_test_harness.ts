@@ -59,6 +59,8 @@ const expectedOutputs: ITracingData = {
 await createSpansAndExportThem({
   tracingData: expectedOutputs,
   dependencies: {
-    diagnosticsManager: getOrCreateDiagnosticsManagerSingleton(),
+    diagnosticsManager: getOrCreateDiagnosticsManagerSingleton({
+      shouldTurnOnDiagnostics: true,
+    }),
   },
 });

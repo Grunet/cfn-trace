@@ -23,7 +23,9 @@ await invoke({
       secretAccessKey: Deno.env.get("AWS_SECRET_ACCESS_KEY") ?? "",
       region: Deno.env.get("AWS_DEFAULT_REGION") ?? "",
       dependencies: {
-        diagnosticsManager: getOrCreateDiagnosticsManagerSingleton(),
+        diagnosticsManager: getOrCreateDiagnosticsManagerSingleton({
+          shouldTurnOnDiagnostics: true,
+        }),
       },
     });
   },
@@ -31,7 +33,9 @@ await invoke({
   telemetrySenderFactory: () => {
     return createTelemetrySender({
       dependencies: {
-        diagnosticsManager: getOrCreateDiagnosticsManagerSingleton(),
+        diagnosticsManager: getOrCreateDiagnosticsManagerSingleton({
+          shouldTurnOnDiagnostics: true,
+        }),
       },
     });
   },
