@@ -1,7 +1,7 @@
 //A manual test harness
 //Based on the expected outputs from transform_test.ts
 
-import { getOrCreateDiagnosticsManagerSingleton } from "../shared/internalDiagnostics/diagnosticsManager.ts";
+import { createDiagnosticsManager } from "../shared/internalDiagnostics/diagnosticsManager.ts";
 import { createSpansAndExportThem } from "./createSpansAndExportThem.ts";
 import { ISpanData, ITracingData } from "./sender.ts";
 
@@ -59,7 +59,7 @@ const expectedOutputs: ITracingData = {
 await createSpansAndExportThem({
   tracingData: expectedOutputs,
   dependencies: {
-    diagnosticsManager: getOrCreateDiagnosticsManagerSingleton({
+    diagnosticsManager: createDiagnosticsManager({
       shouldTurnOnDiagnostics: true,
     }),
   },

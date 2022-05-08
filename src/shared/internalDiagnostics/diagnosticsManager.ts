@@ -26,30 +26,22 @@ class NullManager
   }
 }
 
-interface IGetOrCreateDiagnosticsManagerSingletonInputs {
+interface IGetOrCreateDiagnosticsManagerInputs {
   shouldTurnOnDiagnostics: boolean;
 }
 
-interface IGetOrCreateDiagnosticsManagerSingletonOutput
+interface IGetOrCreateDiagnosticsManagerOutput
   extends IReportSelfDiagnostics, IRegister3rdPartyDiagnostics {}
 
-let diagnosticManagers:
-  | IGetOrCreateDiagnosticsManagerSingletonOutput
-  | undefined = undefined;
-
-function getOrCreateDiagnosticsManagerSingleton(
-  { shouldTurnOnDiagnostics }: IGetOrCreateDiagnosticsManagerSingletonInputs,
-): IGetOrCreateDiagnosticsManagerSingletonOutput {
-  if (!diagnosticManagers) {
-    if (shouldTurnOnDiagnostics) {
-      diagnosticManagers = new DiagnosticsManager();
-    } else {
-      diagnosticManagers = new NullManager();
-    }
+function createDiagnosticsManager(
+  { shouldTurnOnDiagnostics }: IGetOrCreateDiagnosticsManagerInputs,
+): IGetOrCreateDiagnosticsManagerOutput {
+  if (shouldTurnOnDiagnostics) {
+    return new DiagnosticsManager();
+  } else {
+    return new NullManager();
   }
-
-  return diagnosticManagers;
 }
 
-export { getOrCreateDiagnosticsManagerSingleton };
+export { createDiagnosticsManager };
 export type { IRegister3rdPartyDiagnostics, IReportSelfDiagnostics };

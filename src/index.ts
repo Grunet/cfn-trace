@@ -3,7 +3,7 @@ import { IExpectedCliArgs, invoke, IVersionData } from "./invoke.ts";
 import { parse } from "https://deno.land/std@0.132.0/flags/mod.ts";
 import versionDataFromFile from "./../version.json" assert { type: "json" };
 
-import { getOrCreateDiagnosticsManagerSingleton } from "./shared/internalDiagnostics/diagnosticsManager.ts";
+import { createDiagnosticsManager } from "./shared/internalDiagnostics/diagnosticsManager.ts";
 import {
   createCloudformationClientAdapter,
 } from "./cloudformationClientAdapter/client.ts";
@@ -23,7 +23,7 @@ await invoke({
       secretAccessKey: Deno.env.get("AWS_SECRET_ACCESS_KEY") ?? "",
       region: Deno.env.get("AWS_DEFAULT_REGION") ?? "",
       dependencies: {
-        diagnosticsManager: getOrCreateDiagnosticsManagerSingleton({
+        diagnosticsManager: createDiagnosticsManager({
           shouldTurnOnDiagnostics: true,
         }),
       },
@@ -33,7 +33,7 @@ await invoke({
   telemetrySenderFactory: () => {
     return createTelemetrySender({
       dependencies: {
-        diagnosticsManager: getOrCreateDiagnosticsManagerSingleton({
+        diagnosticsManager: createDiagnosticsManager({
           shouldTurnOnDiagnostics: true,
         }),
       },
