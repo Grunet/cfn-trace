@@ -26,16 +26,16 @@ class NullManager
   }
 }
 
-interface IGetOrCreateDiagnosticsManagerInputs {
+interface ICreateDiagnosticsManagerInputs {
   shouldTurnOnDiagnostics: boolean;
 }
 
-interface IGetOrCreateDiagnosticsManagerOutput
+interface ICreateDiagnosticsManagerOutput
   extends IReportSelfDiagnostics, IRegister3rdPartyDiagnostics {}
 
 function createDiagnosticsManager(
-  { shouldTurnOnDiagnostics }: IGetOrCreateDiagnosticsManagerInputs,
-): IGetOrCreateDiagnosticsManagerOutput {
+  { shouldTurnOnDiagnostics }: ICreateDiagnosticsManagerInputs,
+): ICreateDiagnosticsManagerOutput {
   if (shouldTurnOnDiagnostics) {
     return new DiagnosticsManager();
   } else {
@@ -44,4 +44,8 @@ function createDiagnosticsManager(
 }
 
 export { createDiagnosticsManager };
+export type {
+  ICreateDiagnosticsManagerInputs,
+  ICreateDiagnosticsManagerOutput,
+};
 export type { IRegister3rdPartyDiagnostics, IReportSelfDiagnostics };

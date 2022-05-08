@@ -17,25 +17,24 @@ const cliArgs = parse(Deno.args);
 await invoke({
   cliArgs: cliArgs as IExpectedCliArgs,
   versionData: versionDataFromFile as IVersionData,
-  cloudformationClientAdapterFactory: () => {
+  createDiagnosticsManager,
+  cloudformationClientAdapterFactory: (
+    { dependencies: { diagnosticsManager } },
+  ) => {
     return createCloudformationClientAdapter({
       accessKeyId: Deno.env.get("AWS_ACCESS_KEY_ID") ?? "", //TODO - add more explicit validation for these
       secretAccessKey: Deno.env.get("AWS_SECRET_ACCESS_KEY") ?? "",
       region: Deno.env.get("AWS_DEFAULT_REGION") ?? "",
       dependencies: {
-        diagnosticsManager: createDiagnosticsManager({
-          shouldTurnOnDiagnostics: true,
-        }),
+        diagnosticsManager,
       },
     });
   },
   transformStackEventDataIntoTracingData,
-  telemetrySenderFactory: () => {
+  telemetrySenderFactory: ({ dependencies: { diagnosticsManager } }) => {
     return createTelemetrySender({
       dependencies: {
-        diagnosticsManager: createDiagnosticsManager({
-          shouldTurnOnDiagnostics: true,
-        }),
+        diagnosticsManager,
       },
     });
   },

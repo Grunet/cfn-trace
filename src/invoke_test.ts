@@ -33,6 +33,10 @@ Deno.test("Passing --version logs the version to the console", async () => {
   await invoke({
     cliArgs: parsedCliArgs,
     versionData: mockVersionData,
+    createDiagnosticsManager: () => ({
+      report() {},
+      register() {},
+    }),
     cloudformationClientAdapterFactory: () => ({
       getEventsFromMostRecentDeploy() {
         return Promise.resolve({ stackEvents: [] });

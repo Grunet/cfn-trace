@@ -2,17 +2,34 @@ import {
   ICloudformationClientAdapter,
 } from "./cloudformationClientAdapter/client.ts";
 import {
-  transformStackEventDataIntoTracingData,
-} from "./transformer/transform.ts"; //Only depend on the function signature/interface/types here
+  ICreateDiagnosticsManagerInputs,
+  ICreateDiagnosticsManagerOutput,
+  IRegister3rdPartyDiagnostics,
+  IReportSelfDiagnostics,
+} from "./shared/internalDiagnostics/diagnosticsManager.ts";
+import {
+  IInputs as ITransformInputs,
+  ITracingData,
+} from "./transformer/transform.ts";
 import { ITelemetrySender } from "./openTelemetryAdapter/sender.ts";
 
 interface IInputs {
   cliArgs: IExpectedCliArgs;
   versionData: IVersionData;
-  cloudformationClientAdapterFactory: () => ICloudformationClientAdapter;
-  transformStackEventDataIntoTracingData:
-    typeof transformStackEventDataIntoTracingData;
-  telemetrySenderFactory: () => ITelemetrySender;
+  createDiagnosticsManager: (
+    inputs: ICreateDiagnosticsManagerInputs,
+  ) => ICreateDiagnosticsManagerOutput;
+  cloudformationClientAdapterFactory: (
+    { dependencies: { diagnosticsManager } }: {
+      dependencies: { diagnosticsManager: IReportSelfDiagnostics };
+    },
+  ) => ICloudformationClientAdapter;
+  transformStackEventDataIntoTracingData: (
+    inputs: ITransformInputs,
+  ) => Promise<ITracingData>;
+  telemetrySenderFactory: ({ dependencies: { diagnosticsManager } }: {
+    dependencies: { diagnosticsManager: IRegister3rdPartyDiagnostics };
+  }) => ITelemetrySender;
   consoleWriter: IWriteToTheConsole;
 }
 
@@ -33,6 +50,7 @@ async function invoke(
   {
     cliArgs, //TODO - validate this input with zod, iots, etc...
     versionData,
+    createDiagnosticsManager,
     cloudformationClientAdapterFactory,
     transformStackEventDataIntoTracingData,
     telemetrySenderFactory,
@@ -47,11 +65,23 @@ async function invoke(
     const tracingData = await transformStackEventDataIntoTracingData({
       stackName: cliArgs["stack-name"],
       dependencies: {
-        cloudformationClientAdapter: cloudformationClientAdapterFactory(),
+        cloudformationClientAdapter: cloudformationClientAdapterFactory({
+          dependencies: {
+            diagnosticsManager: createDiagnosticsManager({
+              shouldTurnOnDiagnostics: true,
+            }),
+          },
+        }),
       },
     });
 
-    await telemetrySenderFactory().sendTracingData(tracingData);
+    await telemetrySenderFactory({
+      dependencies: {
+        diagnosticsManager: createDiagnosticsManager({
+          shouldTurnOnDiagnostics: true,
+        }),
+      },
+    }).sendTracingData(tracingData);
   }
 }
 
