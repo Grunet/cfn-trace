@@ -1,5 +1,5 @@
 interface IReportSelfDiagnostics {
-  report: (diagnostic: unknown) => void; //TODO - improve this interface
+  report: (message: string, diagnosticData: unknown) => void;
 }
 
 interface IRegister3rdPartyDiagnostics {
@@ -8,8 +8,8 @@ interface IRegister3rdPartyDiagnostics {
 
 class DiagnosticsManager
   implements IReportSelfDiagnostics, IRegister3rdPartyDiagnostics {
-  public report(diagnostic: unknown): void {
-    console.log(diagnostic);
+  public report(message: string, diagnosticData: unknown): void {
+    console.log(message, diagnosticData);
   }
 
   public register(diagnosticDelegate: () => void): void {
@@ -19,7 +19,7 @@ class DiagnosticsManager
 
 class NullManager
   implements IReportSelfDiagnostics, IRegister3rdPartyDiagnostics {
-  public report(_diagnostic: unknown): void {
+  public report(_message: string, _diagnosticData: unknown): void {
   }
 
   public register(_diagnosticDelegate: () => void): void {

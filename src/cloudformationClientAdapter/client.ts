@@ -71,7 +71,10 @@ class CloudformationClientAdapter implements ICloudformationClientAdapter {
     const commandOutput: DescribeStackEventsCommandOutput = await this
       .cloudformationClient.send(command);
 
-    this.diagnosticsManager.report(commandOutput); //TODO - consider adding more context here if it can't be auto-added
+    this.diagnosticsManager.report(
+      `DescribeStackEvents API response for stack named ${stackName}`,
+      commandOutput,
+    );
 
     const { StackEvents } = commandOutput;
 
