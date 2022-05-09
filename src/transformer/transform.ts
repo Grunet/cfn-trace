@@ -265,6 +265,10 @@ function createChildSpanIdGatherer(
   };
 }
 
+function getServiceName(resourceType: string): string {
+  return resourceType.split("::")[1];
+}
+
 function createSpanDataUpdater(
   { currentStackName, createSpanForStack }: {
     currentStackName: string;
@@ -278,6 +282,7 @@ function createSpanDataUpdater(
           resourceIdPerCloudformation,
           resourceStatus,
           timestamp,
+          resourceType,
         },
         constructedIdForTheResource,
         spanDataByConstructedId,
@@ -305,6 +310,7 @@ function createSpanDataUpdater(
         ) ?? {
           childSpanIds: new Set<string>(),
           name: resourceIdPerCloudformation,
+          serviceName: getServiceName(resourceType),
         };
 
         const newTransformedState = {
@@ -327,6 +333,7 @@ function createSpanDataUpdater(
         ) ?? {
           childSpanIds: new Set<string>(),
           name: resourceIdPerCloudformation,
+          serviceName: getServiceName(resourceType),
         };
 
         const newTransformedState = {

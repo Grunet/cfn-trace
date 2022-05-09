@@ -6,7 +6,7 @@ import {
   DiagConsoleLogger,
   DiagLogLevel,
   trace,
-  Tracer,
+  // Tracer,
 } from "https://cdn.skypack.dev/@opentelemetry/api@v1.1.0?dts";
 import {
   ConsoleSpanExporter,
@@ -71,8 +71,7 @@ function getTracer(serviceName: string) {
 }
 
 async function createSpansAndExportThem(
-  { tracingData, dependencies: { diagnosticsManager } }:
-    ICreateSpansAndExportThemInputs,
+  { tracingData }: ICreateSpansAndExportThemInputs,
 ) {
   // diagnosticsManager.register(() => {
   diag.setLogger(
@@ -131,7 +130,7 @@ function createSpanCreator(
       );
     }
 
-    const { name, startInstant, endInstant } = spanRawData;
+    const { name, startInstant, endInstant, serviceName } = spanRawData;
     if (!name) {
       throw new Error(
         `name was unexpectedly falsy: ${name}`,
@@ -154,7 +153,7 @@ function createSpanCreator(
     const endTime = convertInstantToOtelTimeInput(endInstant);
 
     const { tracer, provider } = getTracer(
-      `someServiceName ${Math.floor(Math.random() * 100)}`,
+      serviceName,
     );
 
     const span = tracer.startSpan(name, { startTime }, ctx);

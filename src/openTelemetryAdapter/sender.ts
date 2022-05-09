@@ -12,6 +12,7 @@ interface ISpanData {
   name?: string;
   startInstant?: Date;
   endInstant?: Date;
+  serviceName: string;
 }
 
 interface ITelemetrySender {
